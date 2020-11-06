@@ -650,6 +650,8 @@ symbols! {
         into_trait,
         intra_doc_pointers,
         intrinsics,
+        invalid_cfg_name,
+        invalid_cfg_value,
         irrefutable_let_patterns,
         isa_attribute,
         isize,

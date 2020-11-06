@@ -475,13 +475,13 @@ impl ItemLikeVisitor<'tcx> for DirtyCleanVisitor<'tcx> {
 fn check_config(tcx: TyCtxt<'_>, attr: &Attribute) -> bool {
     debug!("check_config(attr={:?})", attr);
     let config = &tcx.sess.parse_sess.config;
-    debug!("check_config: config={:?}", config);
+    debug!("check_config: config={:?}", config.cfg);
     let (mut cfg, mut except, mut label) = (None, false, false);
     for item in attr.meta_item_list().unwrap_or_else(Vec::new) {
         if item.has_name(CFG) {
             let value = expect_associated_value(tcx, &item);
             debug!("check_config: searching for cfg {:?}", value);
-            cfg = Some(config.contains(&(value, None)));
+            cfg = Some(config.cfg.contains(&(value, None)));
         }
         if item.has_name(LABEL) {
             label = true;

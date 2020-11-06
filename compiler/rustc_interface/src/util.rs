@@ -3,7 +3,7 @@ use rustc_ast::ptr::P;
 use rustc_ast::{self as ast, AttrVec, BlockCheckMode};
 use rustc_codegen_ssa::traits::CodegenBackend;
 use rustc_data_structures::fingerprint::Fingerprint;
-use rustc_data_structures::fx::{FxHashMap, FxHashSet};
+use rustc_data_structures::fx::FxHashMap;
 #[cfg(parallel_compiler)]
 use rustc_data_structures::jobserver;
 use rustc_data_structures::stable_hasher::StableHasher;
@@ -54,16 +54,16 @@ pub fn add_configuration(
     let target_features = codegen_backend.target_features(sess);
     sess.target_features.extend(target_features.iter().cloned());
 
-    cfg.extend(target_features.into_iter().map(|feat| (tf, Some(feat))));
+    cfg.cfg.extend(target_features.into_iter().map(|feat| (tf, Some(feat))));
 
     if sess.crt_static(None) {
-        cfg.insert((tf, Some(sym::crt_dash_static)));
+        cfg.cfg.insert((tf, Some(sym::crt_dash_static)));
     }
 }
 
 pub fn create_session(
     sopts: config::Options,
-    cfg: FxHashSet<(String, Option<String>)>,
+    cfg: crate::cfg::CrateCfg,
     diagnostic_output: DiagnosticOutput,
     file_loader: Option<Box<dyn FileLoader + Send + Sync + 'static>>,
     input_path: Option<PathBuf>,
@@ -94,7 +94,10 @@ pub fn create_session(
 
     codegen_backend.init(&sess);
 
-    let mut cfg = config::build_configuration(&sess, config::to_crate_config(cfg));
+    let mut cfg = config::build_configuration(
+        &sess,
+        config::to_crate_config(cfg.cfg, cfg.valid_names, cfg.valid_values),
+    );
     add_configuration(&mut cfg, &mut sess, &*codegen_backend);
     sess.parse_sess.config = cfg;
 

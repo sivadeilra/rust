@@ -28,6 +28,7 @@ type CfgSpecs = FxHashSet<(String, Option<String>)>;
 fn build_session_options_and_crate_config(matches: getopts::Matches) -> (Options, CfgSpecs) {
     let sessopts = build_session_options(&matches);
     let cfg = parse_cfgspecs(matches.opt_strs("cfg"));
+    let cfg_checks = parse_cfg_check_specs(matches.opt_strs("check-cfg"));
     (sessopts, cfg)
 }
 

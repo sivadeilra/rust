@@ -1875,6 +1875,41 @@ declare_lint! {
 }
 
 declare_lint! {
+    /// The `invalid_cfg_name` lint detects when a `#[cfg(...)]` predicate
+    /// (or any similar form, using `cfg!(...)`, `#[cfg_attr(...)]`) uses
+    /// a `cfg` name that is known to be invalid.
+    ///
+    /// ### Example
+    ///
+    /// ```rust
+    /// #[cfg(widnows)] // <-- note the misspelling
+    /// pub fn do_thing_for_windows() {
+    ///     // ...
+    /// }
+    /// ```
+    pub INVALID_CFG_NAME,
+    Warn,
+    "detects when `c` in a `#[cfg(c)]` condition is invalid"
+}
+
+declare_lint! {
+    /// The `invalid_cfg_value` lint detects when a `#[cfg(foo = "bar")]` predicate
+    /// (or any similar form, using `cfg!(...)`, `#[cfg_attr(...)]`) uses
+    /// a `bar` value that is known to be invalid.
+    ///
+    /// ### Example
+    ///
+    /// ```rust
+    /// #[cfg(feature = "a_bad_name")]
+    /// pub fn my_feature() {
+    ///     // ...
+    /// }
+    /// ```
+    pub INVALID_CFG_VALUE,
+    Warn,
+    "detects when `c` in a `#[cfg(c)]` condition is invalid"
+}
+declare_lint! {
     /// The `where_clauses_object_safety` lint detects for [object safety] of
     /// [where clauses].
     ///
@@ -2955,6 +2990,8 @@ declare_lint_pass! {
         SEMICOLON_IN_EXPRESSIONS_FROM_MACROS,
         DISJOINT_CAPTURE_DROP_REORDER,
         LEGACY_DERIVE_HELPERS,
+        INVALID_CFG_NAME,
+        INVALID_CFG_VALUE,
     ]
 }
 

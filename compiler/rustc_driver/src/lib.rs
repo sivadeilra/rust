@@ -196,7 +196,8 @@ fn run_compiler(
     };
 
     let sopts = config::build_session_options(&matches);
-    let cfg = interface::parse_cfgspecs(matches.opt_strs("cfg"));
+
+    let cfg = interface::parse_cfgspecs(matches.opt_strs("cfg"), matches.opt_strs("check-cfg"));
 
     // We wrap `make_codegen_backend` in another `Option` such that `dummy_config` can take
     // ownership of it when necessary, while also allowing the non-dummy config to take ownership
@@ -584,7 +585,11 @@ fn handle_explain(registry: Registry, code: &str, output: ErrorOutputType) {
 
 fn show_content_with_pager(content: &str) {
     let pager_name = env::var_os("PAGER").unwrap_or_else(|| {
-        if cfg!(windows) { OsString::from("more.com") } else { OsString::from("less") }
+        if cfg!(windows) {
+            OsString::from("more.com")
+        } else {
+            OsString::from("less")
+        }
     });
 
     let mut fallback_to_println = false;
@@ -733,6 +738,7 @@ impl RustcDefaultCalls {
                     let mut cfgs = sess
                         .parse_sess
                         .config
+                        .cfg
                         .iter()
                         .filter_map(|&(name, value)| {
                             // Note that crt-static is a specially recognized cfg
@@ -1138,7 +1144,11 @@ fn extra_compiler_flags() -> Option<(Vec<String>, bool)> {
         }
     }
 
-    if !result.is_empty() { Some((result, excluded_cargo_defaults)) } else { None }
+    if !result.is_empty() {
+        Some((result, excluded_cargo_defaults))
+    } else {
+        None
+    }
 }
 
 /// Runs a closure and catches unwinds triggered by fatal errors.

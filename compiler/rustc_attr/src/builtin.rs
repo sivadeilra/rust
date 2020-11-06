@@ -8,8 +8,9 @@ use rustc_macros::HashStable_Generic;
 use rustc_session::parse::{feature_err, ParseSess};
 use rustc_session::Session;
 use rustc_span::hygiene::Transparency;
-use rustc_span::{symbol::sym, symbol::Symbol, Span};
+use rustc_span::{symbol::sym, symbol::Ident, symbol::Symbol, Span};
 use std::num::NonZeroU32;
+use tracing::info;
 
 pub fn is_builtin_attr(attr: &Attribute) -> bool {
     attr.is_doc_comment() || attr.ident().filter(|ident| is_builtin_attr_name(ident.name)).is_some()
@@ -489,14 +490,84 @@ pub fn cfg_matches(cfg: &ast::MetaItem, sess: &ParseSess, features: Option<&Feat
             sess.span_diagnostic.span_err(span, msg);
             true
         };
+
+        let diag = &sess.span_diagnostic;
+
         if cfg.path.segments.len() != 1 {
             return error(cfg.path.span, "`cfg` predicate key must be an identifier");
         }
+        let ident = cfg.ident().expect("multi-segment cfg predicate");
+
+        let check_cfg_name = |name: &Ident| {
+            if !sess.config.is_name_valid(&name.name) {
+                diag.struct_span_warn_with_code(
+                    name.span,
+                    "invalid cfg name",
+                    rustc_errors::DiagnosticId::Lint { name: "invalid_cfg_name".to_string(), has_future_breakage: false },
+                )
+                .emit();
+            }
+        };
+
         match &cfg.kind {
             MetaItemKind::List(..) => {
                 error(cfg.span, "unexpected parentheses after `cfg` predicate key")
             }
-            MetaItemKind::NameValue(lit) if !lit.kind.is_str() => {
+
+            // We could match against ast::StrStyle::Cooked here, but that would be more
+            // restrictive; it would be a breaking change.
+            MetaItemKind::NameValue(ast::Lit {
+                kind: ast::LitKind::Str(value_str, _),
+                span: value_span,
+                ..
+            }) => {
+                let enabled = sess.config.cfg.contains(&(ident.name, Some(*value_str)));
+                if !enabled {
+                    check_cfg_name(&ident);
+                    // Check that the cfg value is valid.
+                    if let Some(valid_values) = sess.config.valid_values.get(&ident.name) {
+                        info!("check_cfg: checking key/value pair for name '{}'", ident.name);
+                        if valid_values.contains(value_str) {
+                            // found value in valid_values. yay!
+                        } else {
+                            // valid_values does NOT contain an entry for this value; report error
+                            let mut err = diag.struct_span_warn_with_code(
+                                *value_span,
+                                &format!(
+                                    "the value \"{}\" is not valid for the '{}' cfg option",
+                                    value_str.to_ident_string(),
+                                    ident.name.to_ident_string()
+                                ),
+                                rustc_errors::DiagnosticId::Lint { name: "invalid_cfg_name".to_string(), has_future_breakage: false },
+                            );
+                            let mut valid_values_vec: Vec<String> =
+                                valid_values.iter().map(|sym| sym.to_ident_string()).collect();
+                            valid_values_vec.sort();
+                            let valid_values_vec: Vec<String> = valid_values_vec
+                                .into_iter()
+                                .map(|s| format!("\"{}\"", s))
+                                .collect();
+                            err.help(&format!(
+                                "the cfg option '{}' has these valid values: {}",
+                                ident.name,
+                                valid_values_vec.join(", ")
+                            ));
+                            if ident.as_str() == "feature" {
+                                err.help(&format!("Check your Cargo.toml file to make sure that it declares a [features] entry for \"{}\".",
+                                    value_str.to_ident_string()));
+                            }
+                            err.emit();
+                        }
+                    } else {
+                        info!("check_cfg: key '{}' is not enabled for checking values", ident.name);
+                    }
+                } else {
+                    info!("check_cfg: key '{}' is enabled, so it is treated as active", ident.name);
+                }
+                enabled
+            }
+
+            MetaItemKind::NameValue(lit) => {
                 handle_errors(
                     sess,
                     lit.span,
@@ -507,9 +578,15 @@ pub fn cfg_matches(cfg: &ast::MetaItem, sess: &ParseSess, features: Option<&Feat
                 );
                 true
             }
-            MetaItemKind::NameValue(..) | MetaItemKind::Word => {
-                let ident = cfg.ident().expect("multi-segment cfg predicate");
-                sess.config.contains(&(ident.name, cfg.value_str()))
+
+            MetaItemKind::Word => {
+                let enabled = sess.config.cfg.contains(&(ident.name, None));
+                if !enabled {
+                    check_cfg_name(&ident);
+                } else {
+                    info!("check_cfg: key '{}' is enabled, so it is treated as active", ident.name);
+                }
+                enabled
             }
         }
     })
@@ -615,12 +692,20 @@ pub fn eval_condition(
             // The unwraps below may look dangerous, but we've already asserted
             // that they won't fail with the loop above.
             match cfg.name_or_empty() {
-                sym::any => mis
-                    .iter()
-                    .any(|mi| eval_condition(mi.meta_item().unwrap(), sess, features, eval)),
-                sym::all => mis
-                    .iter()
-                    .all(|mi| eval_condition(mi.meta_item().unwrap(), sess, features, eval)),
+                sym::any => mis.iter().fold(false, |acc, mi| {
+                    // Do not change "acc | ..." to || (short-circuiting).
+                    // We need to check that all conditions are valid, regardless of whether
+                    // they evaluate to true.
+                    acc | eval_condition(mi.meta_item().unwrap(), sess, features, eval)
+                }),
+
+                sym::all => mis.iter().fold(true, |acc, mi| {
+                    // Do not change "acc & ..." to || (short-circuiting).
+                    // We need to check that all conditions are valid, regardless of whether
+                    // they evaluate to true.
+                    acc & eval_condition(mi.meta_item().unwrap(), sess, features, eval)
+                }),
+
                 sym::not => {
                     if mis.len() != 1 {
                         struct_span_err!(

@@ -17,7 +17,22 @@ use std::str;
 
 /// The set of keys (and, optionally, values) that define the compilation
 /// environment of the crate, used to drive conditional compilation.
-pub type CrateConfig = FxHashSet<(Symbol, Option<Symbol>)>;
+#[derive(Default)]
+pub struct CrateConfig {
+    pub cfg: FxHashSet<(Symbol, Option<Symbol>)>,
+    pub valid_names: Option<FxHashSet<Symbol>>,
+    pub valid_values: FxHashMap<Symbol, FxHashSet<Symbol>>,
+}
+
+impl CrateConfig {
+    pub fn is_name_valid(&self, name: &Symbol) -> bool {
+        if let Some(valid_names) = self.valid_names.as_ref() {
+            valid_names.contains(name)
+        } else {
+            true
+        }
+    }
+}
 
 /// Collected spans during parsing for places where a certain feature was
 /// used and should be feature gated accordingly in `check_crate`.
@@ -150,7 +165,7 @@ impl ParseSess {
         Self {
             span_diagnostic: handler,
             unstable_features: UnstableFeatures::from_environment(None),
-            config: FxHashSet::default(),
+            config: CrateConfig::default(),
             edition: ExpnId::root().expn_data().edition,
             missing_fragment_specifiers: Default::default(),
             raw_identifier_spans: Lock::new(Vec::new()),

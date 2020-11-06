@@ -9,12 +9,14 @@
 #![recursion_limit = "256"]
 
 mod callbacks;
+mod cfg;
 pub mod interface;
 mod passes;
 mod proc_macro_decls;
 mod queries;
 pub mod util;
 
+pub use cfg::CrateCfg;
 pub use interface::{run_compiler, Config};
 pub use passes::{DEFAULT_EXTERN_QUERY_PROVIDERS, DEFAULT_QUERY_PROVIDERS};
 pub use queries::Queries;

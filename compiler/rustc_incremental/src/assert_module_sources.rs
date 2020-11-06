@@ -171,8 +171,8 @@ impl AssertModuleSource<'tcx> {
     fn check_config(&self, attr: &ast::Attribute) -> bool {
         let config = &self.tcx.sess.parse_sess.config;
         let value = self.field(attr, sym::cfg);
-        debug!("check_config(config={:?}, value={:?})", config, value);
-        if config.iter().any(|&(name, _)| name == value) {
+        debug!("check_config(config={:?}, value={:?})", config.cfg, value);
+        if config.cfg.iter().any(|&(name, _)| name == value) {
             debug!("check_config: matched");
             return true;
         }

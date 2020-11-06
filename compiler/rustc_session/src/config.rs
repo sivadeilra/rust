@@ -8,7 +8,7 @@ use crate::search_paths::SearchPath;
 use crate::utils::{CanonicalizedPath, NativeLibKind};
 use crate::{early_error, early_warn, Session};
 
-use rustc_data_structures::fx::FxHashSet;
+use rustc_data_structures::fx::{FxHashSet, FxHashMap};
 use rustc_data_structures::impl_stable_hash_via_hash;
 use rustc_data_structures::stable_hasher::{HashStable, StableHasher};
 
@@ -848,7 +848,7 @@ pub fn default_configuration(sess: &Session) -> CrateConfig {
 
     let mut ret = FxHashSet::default();
     ret.reserve(6); // the minimum number of insertions
-    // Target bindings.
+                    // Target bindings.
     ret.insert((sym::target_os, Some(Symbol::intern(os))));
     if let Some(ref fam) = sess.target.os_family {
         ret.insert((sym::target_family, Some(Symbol::intern(fam))));
@@ -905,14 +905,35 @@ pub fn default_configuration(sess: &Session) -> CrateConfig {
     if sess.opts.crate_types.contains(&CrateType::ProcMacro) {
         ret.insert((sym::proc_macro, None));
     }
-    ret
+
+    crate::parse::CrateConfig {
+        cfg: ret,
+        // TODO(ardavis)
+        valid_names: Default::default(),
+        valid_values: Default::default(),
+    }
 }
 
 /// Converts the crate `cfg!` configuration from `String` to `Symbol`.
 /// `rustc_interface::interface::Config` accepts this in the compiler configuration,
 /// but the symbol interner is not yet set up then, so we must convert it later.
-pub fn to_crate_config(cfg: FxHashSet<(String, Option<String>)>) -> CrateConfig {
-    cfg.into_iter().map(|(a, b)| (Symbol::intern(&a), b.map(|b| Symbol::intern(&b)))).collect()
+pub fn to_crate_config(
+    cfg: FxHashSet<(String, Option<String>)>,
+    valid_names: Option<FxHashSet<String>>,
+    valid_values: FxHashMap<String, FxHashSet<String>>,
+) -> CrateConfig {
+    CrateConfig {
+        cfg: cfg
+            .into_iter()
+            .map(|(a, b)| (Symbol::intern(&a), b.map(|b| Symbol::intern(&b))))
+            .collect(),
+        valid_names: valid_names
+            .map(|vn| vn.into_iter().map(|name| Symbol::intern(&name)).collect()),
+        valid_values: valid_values
+            .into_iter()
+            .map(|(k, v)| (Symbol::intern(&k), v.into_iter().map(|v| Symbol::intern(&v)).collect()))
+            .collect(),
+    }
 }
 
 pub fn build_configuration(sess: &Session, mut user_cfg: CrateConfig) -> CrateConfig {
@@ -921,9 +942,9 @@ pub fn build_configuration(sess: &Session, mut user_cfg: CrateConfig) -> CrateCo
     let default_cfg = default_configuration(sess);
     // If the user wants a test runner, then add the test cfg.
     if sess.opts.test {
-        user_cfg.insert((sym::test, None));
+        user_cfg.cfg.insert((sym::test, None));
     }
-    user_cfg.extend(default_cfg.iter().cloned());
+    user_cfg.cfg.extend(default_cfg.cfg.into_iter());
     user_cfg
 }
 
@@ -1017,7 +1038,11 @@ mod opt {
     }
 
     fn longer(a: S, b: S) -> S {
-        if a.len() > b.len() { a } else { b }
+        if a.len() > b.len() {
+            a
+        } else {
+            b
+        }
     }
 
     pub fn opt_s(a: S, b: S, c: S, d: S) -> R {
@@ -1060,6 +1085,7 @@ pub fn rustc_short_optgroups() -> Vec<RustcOptGroup> {
     vec![
         opt::flag_s("h", "help", "Display this message"),
         opt::multi_s("", "cfg", "Configure the compilation environment", "SPEC"),
+        opt::multi_s("", "check-cfg", "Enable and configure checking for --cfg options", "SPEC"),
         opt::multi_s(
             "L",
             "",

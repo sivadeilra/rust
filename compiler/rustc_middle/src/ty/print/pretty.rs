@@ -464,6 +464,7 @@ pub trait PrettyPrinter<'tcx>:
                 | ty::Bool
                 | ty::Char
                 | ty::Str
+                | ty::Strz
                 | ty::Int(_)
                 | ty::Uint(_)
                 | ty::Float(_) => {
@@ -641,6 +642,7 @@ pub trait PrettyPrinter<'tcx>:
                 })?);
             }
             ty::Str => p!("str"),
+            ty::Strz => p!("strz"),
             ty::Generator(did, substs, movability) => {
                 p!(write("["));
                 match movability {

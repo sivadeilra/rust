@@ -302,6 +302,7 @@ fn characteristic_def_id_of_type_cached<'a>(
         | ty::Int(_)
         | ty::Uint(_)
         | ty::Str
+        | ty::Strz
         | ty::FnPtr(_)
         | ty::Projection(_)
         | ty::Placeholder(..)

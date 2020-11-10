@@ -919,7 +919,7 @@ pub fn find_repr_attrs(sess: &Session, attr: &Attribute) -> Vec<ReprAttr> {
                                         Applicability::MachineApplicable,
                                     );
                                 }
-                                ast::LitKind::Str(s, _) => {
+                                ast::LitKind::Str(s, ..) => {
                                     err.span_suggestion(
                                         item.span(),
                                         "use parentheses instead",

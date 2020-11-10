@@ -574,7 +574,7 @@ impl Visitor<'tcx> for Validator<'mir, 'tcx> {
                     let unsized_ty = self.tcx.struct_tail_erasing_lifetimes(ty, self.param_env);
 
                     // Casting/coercing things to slices is fine.
-                    if let ty::Slice(_) | ty::Str = unsized_ty.kind() {
+                    if let ty::Slice(_) | ty::Str | ty::Strz = unsized_ty.kind() {
                         return;
                     }
                 }

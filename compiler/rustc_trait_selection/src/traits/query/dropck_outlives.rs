@@ -100,6 +100,7 @@ pub fn trivial_dropck_outlives<'tcx>(tcx: TyCtxt<'tcx>, ty: Ty<'tcx>) -> bool {
         | ty::RawPtr(_)
         | ty::Ref(..)
         | ty::Str
+        | ty::Strz
         | ty::Foreign(..)
         | ty::Error(_) => true,
 

@@ -45,6 +45,7 @@ fn may_be_reference(ty: Ty<'tcx>) -> bool {
         | ty::RawPtr(..)
         | ty::FnPtr(..)
         | ty::Str
+        | ty::Strz
         | ty::FnDef(..)
         | ty::Never => false,
         // References

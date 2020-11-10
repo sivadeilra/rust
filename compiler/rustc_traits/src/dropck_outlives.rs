@@ -179,6 +179,7 @@ fn dtorck_constraint_for_ty<'tcx>(
         | ty::Uint(_)
         | ty::Float(_)
         | ty::Str
+        | ty::Strz
         | ty::Never
         | ty::Foreign(..)
         | ty::RawPtr(..)

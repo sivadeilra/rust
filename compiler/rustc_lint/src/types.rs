@@ -1004,7 +1004,7 @@ impl<'a, 'tcx> ImproperCTypesVisitor<'a, 'tcx> {
                 FfiUnsafe { ty, reason: "trait objects have no C equivalent".into(), help: None }
             }
 
-            ty::Str => FfiUnsafe {
+            ty::Str | ty::Strz => FfiUnsafe {
                 ty,
                 reason: "string slices have no C equivalent".into(),
                 help: Some("consider using `*const u8` and a length instead".into()),

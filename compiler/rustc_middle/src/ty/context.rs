@@ -167,6 +167,7 @@ pub struct CommonTypes<'tcx> {
     pub f32: Ty<'tcx>,
     pub f64: Ty<'tcx>,
     pub str_: Ty<'tcx>,
+    pub strz: Ty<'tcx>,
     pub never: Ty<'tcx>,
     pub self_param: Ty<'tcx>,
 
@@ -819,6 +820,7 @@ impl<'tcx> CommonTypes<'tcx> {
             f32: mk(Float(ast::FloatTy::F32)),
             f64: mk(Float(ast::FloatTy::F64)),
             str_: mk(Str),
+            strz: mk(Strz),
             self_param: mk(ty::Param(ty::ParamTy { index: 0, name: kw::SelfUpper })),
 
             trait_object_dummy_self: mk(Infer(ty::FreshTy(0))),
@@ -1818,7 +1820,7 @@ macro_rules! sty_debug_print {
                 for &Interned(t) in types {
                     let variant = match t.kind() {
                         ty::Bool | ty::Char | ty::Int(..) | ty::Uint(..) |
-                            ty::Float(..) | ty::Str | ty::Never => continue,
+                            ty::Float(..) | ty::Str | ty::Strz | ty::Never => continue,
                         ty::Error(_) => /* unimportant */ continue,
                         $(ty::$variant(..) => &mut $variant,)*
                     };
@@ -2146,6 +2148,11 @@ impl<'tcx> TyCtxt<'tcx> {
     #[inline]
     pub fn mk_static_str(self) -> Ty<'tcx> {
         self.mk_imm_ref(self.lifetimes.re_static, self.types.str_)
+    }
+
+    #[inline]
+    pub fn mk_static_strz(self) -> Ty<'tcx> {
+        self.mk_imm_ref(self.lifetimes.re_static, self.types.strz)
     }
 
     #[inline]

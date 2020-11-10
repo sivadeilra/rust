@@ -333,7 +333,7 @@ impl<'a> ExtCtxt<'a> {
         self.expr_addr_of(sp, self.expr_vec(sp, exprs))
     }
     pub fn expr_str(&self, sp: Span, s: Symbol) -> P<ast::Expr> {
-        self.expr_lit(sp, ast::LitKind::Str(s, ast::StrStyle::Cooked))
+        self.expr_lit(sp, ast::LitKind::str_from_symbol(s))
     }
 
     pub fn expr_cast(&self, sp: Span, expr: P<ast::Expr>, ty: P<ast::Ty>) -> P<ast::Expr> {

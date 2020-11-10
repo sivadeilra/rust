@@ -352,7 +352,7 @@ impl<'rt, 'mir, 'tcx: 'mir, M: Machine<'mir, 'tcx>> ValidityVisitor<'rt, 'mir, '
                 );
                 // FIXME: More checks for the vtable.
             }
-            ty::Slice(..) | ty::Str => {
+            ty::Slice(..) | ty::Str | ty::Strz => {
                 let _len = try_validation!(
                     meta.unwrap_meta().to_machine_usize(self.ecx),
                     self.path,
@@ -586,6 +586,7 @@ impl<'rt, 'mir, 'tcx: 'mir, M: Machine<'mir, 'tcx>> ValidityVisitor<'rt, 'mir, '
             | ty::Array(..)
             | ty::Slice(..)
             | ty::Str
+            | ty::Strz
             | ty::Dynamic(..)
             | ty::Closure(..)
             | ty::Generator(..) => Ok(false),
@@ -793,7 +794,7 @@ impl<'rt, 'mir, 'tcx: 'mir, M: Machine<'mir, 'tcx>> ValueVisitor<'mir, 'tcx, M>
         fields: impl Iterator<Item = InterpResult<'tcx, Self::V>>,
     ) -> InterpResult<'tcx> {
         match op.layout.ty.kind() {
-            ty::Str => {
+            ty::Str | ty::Strz => {
                 let mplace = op.assert_mem_place(self.ecx); // strings are never immediate
                 let len = mplace.len(self.ecx)?;
                 try_validation!(

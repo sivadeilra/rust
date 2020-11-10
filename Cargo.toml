@@ -101,5 +101,12 @@ rustc-std-workspace-std = { path = 'library/rustc-std-workspace-std' }
 # source code for this crate.
 backtrace = { path = "library/backtrace" }
 
+chalk-ir = { path = "chalk/chalk-ir" }
+chalk-solve = { path = "chalk/chalk-solve" }
+chalk-recursive = { path = "chalk/chalk-recursive" }
+chalk-engine = { path = "chalk/chalk-engine" }
+chalk-parse = { path = "chalk/chalk-parse" }
+chalk-integration = { path = "chalk/chalk-integration" }
+
 [patch."https://github.com/rust-lang/rust-clippy"]
 clippy_lints = { path = "src/tools/clippy/clippy_lints" }

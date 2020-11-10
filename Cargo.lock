@@ -461,8 +461,6 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chalk-derive"
 version = "0.32.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d072b2ba723f0bada7c515d8b3725224bc4f5052d2a92dcbeb0b118ff37084a"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -473,8 +471,6 @@ dependencies = [
 [[package]]
 name = "chalk-engine"
 version = "0.32.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6fb5475f6083d6d6c509e1c335c4f69ad04144ac090faa1afb134a53c3695841"
 dependencies = [
  "chalk-derive",
  "chalk-ir",
@@ -486,8 +482,6 @@ dependencies = [
 [[package]]
 name = "chalk-ir"
 version = "0.32.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f60cdb0e18c5455cb6a85e8464aad3622b70476018edfa8845691df66f7e9a05"
 dependencies = [
  "chalk-derive",
  "lazy_static",
@@ -496,8 +490,6 @@ dependencies = [
 [[package]]
 name = "chalk-solve"
 version = "0.32.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "981534d499a8476ecc0b520be4d3864757f96211826a75360fbf2cb6fae362ab"
 dependencies = [
  "chalk-derive",
  "chalk-ir",
@@ -5262,7 +5254,7 @@ dependencies = [
  "chrono",
  "lazy_static",
  "matchers",
- "parking_lot 0.11.0",
+ "parking_lot 0.9.0",
  "regex",
  "serde",
  "serde_json",
@@ -5611,3 +5603,15 @@ checksum = "39f0c922f1a334134dc2f7a8b67dc5d25f0735263feec974345ff706bcf20b0d"
 dependencies = [
  "linked-hash-map",
 ]
+
+[[patch.unused]]
+name = "chalk-integration"
+version = "0.32.0"
+
+[[patch.unused]]
+name = "chalk-parse"
+version = "0.32.0"
+
+[[patch.unused]]
+name = "chalk-recursive"
+version = "0.32.0"

@@ -2497,3 +2497,6 @@ impl_fn_for_zst! {
         unsafe { from_utf8_unchecked(bytes) }
     };
 }
+
+#[cfg(not(bootstrap))]
+pub mod strz;

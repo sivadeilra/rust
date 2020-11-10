@@ -280,6 +280,10 @@ impl<'tcx> LowerInto<'tcx, chalk_ir::Ty<RustInterner<'tcx>>> for Ty<'tcx> {
             Adt(def, substs) => apply(struct_ty(def.did), substs.lower_into(interner)),
             Foreign(def_id) => apply(chalk_ir::TypeName::Foreign(ForeignDefId(def_id)), empty()),
             Str => apply(chalk_ir::TypeName::Str, empty()),
+            Strz => {
+                // apply(chalk_ir::TypeName::Strz, empty()),
+                unimplemented!("lowering to chalk is nyi for strz");
+            }
             Array(ty, len) => {
                 let value = match len.val {
                     ty::ConstKind::Value(val) => {

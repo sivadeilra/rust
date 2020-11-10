@@ -1073,6 +1073,7 @@ symbols! {
         structural_match,
         structural_peq,
         structural_teq,
+        strz,
         sty,
         sub,
         sub_assign,
@@ -1203,6 +1204,7 @@ symbols! {
         volatile_load,
         volatile_set_memory,
         volatile_store,
+        w,
         warn,
         wasm_import_module,
         wasm_target_feature,
@@ -1214,6 +1216,8 @@ symbols! {
         wrapping_mul,
         wrapping_sub,
         write_bytes,
+        wz,
+        z,
     }
 }
 

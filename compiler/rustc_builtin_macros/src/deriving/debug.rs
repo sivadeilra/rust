@@ -60,7 +60,7 @@ fn show_substructure(cx: &mut ExtCtxt<'_>, span: Span, substr: &Substructure<'_>
 
     // We want to make sure we have the ctxt set so that we can use unstable methods
     let span = cx.with_def_site_ctxt(span);
-    let name = cx.expr_lit(span, ast::LitKind::Str(ident.name, ast::StrStyle::Cooked));
+    let name = cx.expr_lit(span, ast::LitKind::Str(ident.name, ast::StrStyle::Cooked, ast::StrSuffix::None));
     let builder = Ident::new(sym::debug_trait_builder, span);
     let builder_expr = cx.expr_ident(span, builder);
 
@@ -100,7 +100,7 @@ fn show_substructure(cx: &mut ExtCtxt<'_>, span: Span, substr: &Substructure<'_>
             for field in fields {
                 let name = cx.expr_lit(
                     field.span,
-                    ast::LitKind::Str(field.name.unwrap().name, ast::StrStyle::Cooked),
+                    ast::LitKind::Str(field.name.unwrap().name, ast::StrStyle::Cooked, ast::StrSuffix::None),
                 );
 
                 // Use double indirection to make sure this works for unsized types

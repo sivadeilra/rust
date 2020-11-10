@@ -339,6 +339,7 @@ impl Printer<'tcx> for SymbolMangler<'tcx> {
             ty::Bool => "b",
             ty::Char => "c",
             ty::Str => "e",
+            ty::Strz => "E", // TODO(ardavis)
             ty::Tuple(_) if ty.is_unit() => "u",
             ty::Int(IntTy::I8) => "a",
             ty::Int(IntTy::I16) => "s",
@@ -373,7 +374,7 @@ impl Printer<'tcx> for SymbolMangler<'tcx> {
 
         match *ty.kind() {
             // Basic types, handled above.
-            ty::Bool | ty::Char | ty::Str | ty::Int(_) | ty::Uint(_) | ty::Float(_) | ty::Never => {
+            ty::Bool | ty::Char | ty::Str | ty::Strz | ty::Int(_) | ty::Uint(_) | ty::Float(_) | ty::Never => {
                 unreachable!()
             }
             ty::Tuple(_) if ty.is_unit() => unreachable!(),

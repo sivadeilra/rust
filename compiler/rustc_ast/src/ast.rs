@@ -1549,6 +1549,7 @@ pub struct StrLit {
     pub style: StrStyle,
     pub symbol: Symbol,
     pub suffix: Option<Symbol>,
+    pub str_suffix: StrSuffix,
     pub span: Span,
     /// The unescaped "semantic" representation of the literal lowered from the original token.
     /// FIXME: Remove this and only create the semantic representation during lowering to HIR.
@@ -1564,7 +1565,7 @@ impl StrLit {
         Lit {
             token: token::Lit::new(token_kind, self.symbol, self.suffix),
             span: self.span,
-            kind: LitKind::Str(self.symbol_unescaped, self.style),
+            kind: LitKind::Str(self.symbol_unescaped, self.style, self.str_suffix),
         }
     }
 }
@@ -1591,13 +1592,22 @@ pub enum LitFloatType {
     Unsuffixed,
 }
 
+#[derive(Copy, Clone, Encodable, Decodable, Debug, Hash, Eq, PartialEq, HashStable_Generic)]
+#[allow(non_camel_case_types)]
+pub enum StrSuffix {
+    None,
+    z,
+    wz,
+    w,
+}
+
 /// Literal kind.
 ///
 /// E.g., `"foo"`, `42`, `12.34`, or `bool`.
 #[derive(Clone, Encodable, Decodable, Debug, Hash, Eq, PartialEq, HashStable_Generic)]
 pub enum LitKind {
     /// A string literal (`"foo"`).
-    Str(Symbol, StrStyle),
+    Str(Symbol, StrStyle, StrSuffix),
     /// A byte string (`b"foo"`).
     ByteStr(Lrc<[u8]>),
     /// A byte char (`b'f'`).
@@ -1615,6 +1625,11 @@ pub enum LitKind {
 }
 
 impl LitKind {
+    /// Makes a 'LitKind' from a stringsymbol
+    pub fn str_from_symbol(s: Symbol) -> Self {
+        Self::Str(s, StrStyle::Cooked, StrSuffix::None)
+    }
+
     /// Returns `true` if this literal is a string.
     pub fn is_str(&self) -> bool {
         match *self {
@@ -1651,9 +1666,10 @@ impl LitKind {
             // suffixed variants
             LitKind::Int(_, LitIntType::Signed(..) | LitIntType::Unsigned(..))
             | LitKind::Float(_, LitFloatType::Suffixed(..)) => true,
+            LitKind::Str(_, _, StrSuffix::None) => false,
+            LitKind::Str(_, _, _) => true,
             // unsuffixed variants
-            LitKind::Str(..)
-            | LitKind::ByteStr(..)
+            LitKind::ByteStr(..)
             | LitKind::Byte(..)
             | LitKind::Char(..)
             | LitKind::Int(_, LitIntType::Unsuffixed)

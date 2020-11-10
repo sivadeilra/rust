@@ -1524,7 +1524,7 @@ impl<'cx, 'tcx> SelectionContext<'cx, 'tcx> {
                 Where(ty::Binder::dummy(Vec::new()))
             }
 
-            ty::Str | ty::Slice(_) | ty::Dynamic(..) | ty::Foreign(..) => None,
+            ty::Str | ty::Strz | ty::Slice(_) | ty::Dynamic(..) | ty::Foreign(..) => None,
 
             ty::Tuple(tys) => Where(
                 obligation
@@ -1583,6 +1583,7 @@ impl<'cx, 'tcx> SelectionContext<'cx, 'tcx> {
 
             ty::Dynamic(..)
             | ty::Str
+            | ty::Strz
             | ty::Slice(..)
             | ty::Generator(..)
             | ty::GeneratorWitness(..)
@@ -1650,6 +1651,7 @@ impl<'cx, 'tcx> SelectionContext<'cx, 'tcx> {
             | ty::FnDef(..)
             | ty::FnPtr(_)
             | ty::Str
+            | ty::Strz
             | ty::Error(_)
             | ty::Infer(ty::IntVar(_) | ty::FloatVar(_))
             | ty::Never

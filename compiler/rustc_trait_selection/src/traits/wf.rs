@@ -485,6 +485,7 @@ impl<'a, 'tcx> WfPredicates<'a, 'tcx> {
                 | ty::Float(..)
                 | ty::Error(_)
                 | ty::Str
+                | ty::Strz
                 | ty::GeneratorWitness(..)
                 | ty::Never
                 | ty::Param(_)

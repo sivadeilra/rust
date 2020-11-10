@@ -114,7 +114,7 @@ pub(super) fn op_to_const<'tcx>(
         Abi::ScalarPair(..) => match op.layout.ty.kind() {
             ty::Ref(_, inner, _) => match *inner.kind() {
                 ty::Slice(elem) => elem == ecx.tcx.types.u8,
-                ty::Str => true,
+                ty::Str | ty::Strz => true,
                 _ => false,
             },
             _ => false,

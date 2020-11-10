@@ -209,6 +209,7 @@ where
             | ty::Uint(..)
             | ty::Float(..)
             | ty::Str
+            | ty::Strz
             | ty::Never
             | ty::Array(..)
             | ty::Slice(..)

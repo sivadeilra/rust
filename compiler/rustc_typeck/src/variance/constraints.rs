@@ -264,6 +264,7 @@ impl<'a, 'tcx> ConstraintContext<'a, 'tcx> {
             | ty::Uint(_)
             | ty::Float(_)
             | ty::Str
+            | ty::Strz
             | ty::Never
             | ty::Foreign(..) => {
                 // leaf type -- noop

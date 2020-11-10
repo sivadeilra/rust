@@ -711,6 +711,7 @@ impl<'tcx> ty::TyS<'tcx> {
             | ty::Bool
             | ty::Char
             | ty::Str
+            | ty::Strz
             | ty::Never
             | ty::Ref(..)
             | ty::RawPtr(_)
@@ -785,7 +786,7 @@ impl<'tcx> ty::TyS<'tcx> {
             Adt(..) => tcx.has_structural_eq_impls(self),
 
             // Primitive types that satisfy `Eq`.
-            Bool | Char | Int(_) | Uint(_) | Str | Never => true,
+            Bool | Char | Int(_) | Uint(_) | Str | Strz | Never => true,
 
             // Composite types that satisfy `Eq` when all of their fields do.
             //
@@ -1088,7 +1089,8 @@ pub fn needs_drop_components(
         | ty::GeneratorWitness(..)
         | ty::RawPtr(_)
         | ty::Ref(..)
-        | ty::Str => Ok(SmallVec::new()),
+        | ty::Str
+        | ty::Strz => Ok(SmallVec::new()),
 
         // Foreign types can never have destructors.
         ty::Foreign(..) => Ok(SmallVec::new()),

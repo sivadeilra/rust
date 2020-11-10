@@ -29,6 +29,7 @@ where
     FloatSimplifiedType(ast::FloatTy),
     AdtSimplifiedType(D),
     StrSimplifiedType,
+    StrzSimplifiedType,
     ArraySimplifiedType,
     PtrSimplifiedType,
     NeverSimplifiedType,
@@ -68,6 +69,7 @@ pub fn simplify_type(
         ty::Float(float_type) => Some(FloatSimplifiedType(float_type)),
         ty::Adt(def, _) => Some(AdtSimplifiedType(def.did)),
         ty::Str => Some(StrSimplifiedType),
+        ty::Strz => Some(StrzSimplifiedType),
         ty::Array(..) | ty::Slice(_) => Some(ArraySimplifiedType),
         ty::RawPtr(_) => Some(PtrSimplifiedType),
         ty::Dynamic(ref trait_info, ..) => match trait_info.principal_def_id() {
@@ -122,6 +124,7 @@ impl<D: Copy + Debug + Ord + Eq> SimplifiedTypeGen<D> {
             FloatSimplifiedType(t) => FloatSimplifiedType(t),
             AdtSimplifiedType(d) => AdtSimplifiedType(map(d)),
             StrSimplifiedType => StrSimplifiedType,
+            StrzSimplifiedType => StrzSimplifiedType,
             ArraySimplifiedType => ArraySimplifiedType,
             PtrSimplifiedType => PtrSimplifiedType,
             NeverSimplifiedType => NeverSimplifiedType,
@@ -149,6 +152,7 @@ where
             BoolSimplifiedType
             | CharSimplifiedType
             | StrSimplifiedType
+            | StrzSimplifiedType
             | ArraySimplifiedType
             | PtrSimplifiedType
             | NeverSimplifiedType

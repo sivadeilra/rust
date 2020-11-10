@@ -1336,10 +1336,11 @@ impl<'a> Parser<'a> {
     pub fn parse_str_lit(&mut self) -> Result<ast::StrLit, Option<Lit>> {
         match self.parse_opt_lit() {
             Some(lit) => match lit.kind {
-                ast::LitKind::Str(symbol_unescaped, style) => Ok(ast::StrLit {
+                ast::LitKind::Str(symbol_unescaped, style, str_suffix) => Ok(ast::StrLit {
                     style,
                     symbol: lit.token.symbol,
                     suffix: lit.token.suffix,
+                    str_suffix,
                     span: lit.span,
                     symbol_unescaped,
                 }),

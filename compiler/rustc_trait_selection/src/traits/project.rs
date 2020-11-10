@@ -1042,6 +1042,7 @@ fn assemble_candidates_from_impls<'cx, 'tcx>(
                     | ty::Adt(..)
                     | ty::Foreign(_)
                     | ty::Str
+                    | ty::Strz
                     | ty::Array(..)
                     | ty::Slice(_)
                     | ty::RawPtr(..)

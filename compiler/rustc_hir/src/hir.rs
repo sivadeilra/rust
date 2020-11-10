@@ -1971,6 +1971,7 @@ pub enum PrimTy {
     Uint(UintTy),
     Float(FloatTy),
     Str,
+    Strz,
     Bool,
     Char,
 }
@@ -1982,6 +1983,7 @@ impl PrimTy {
             PrimTy::Uint(u) => u.name_str(),
             PrimTy::Float(f) => f.name_str(),
             PrimTy::Str => "str",
+            PrimTy::Strz => "strz",
             PrimTy::Bool => "bool",
             PrimTy::Char => "char",
         }
@@ -1993,6 +1995,7 @@ impl PrimTy {
             PrimTy::Uint(u) => u.name(),
             PrimTy::Float(f) => f.name(),
             PrimTy::Str => sym::str,
+            PrimTy::Strz => sym::strz,
             PrimTy::Bool => sym::bool,
             PrimTy::Char => sym::char,
         }

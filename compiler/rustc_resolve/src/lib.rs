@@ -37,7 +37,7 @@ use rustc_hir::def::Namespace::*;
 use rustc_hir::def::{self, CtorOf, DefKind, NonMacroAttrKind, PartialRes};
 use rustc_hir::def_id::{CrateNum, DefId, DefIdMap, LocalDefId, CRATE_DEF_INDEX};
 use rustc_hir::definitions::{DefKey, DefPathData, Definitions};
-use rustc_hir::PrimTy::{self, Bool, Char, Float, Int, Str, Uint};
+use rustc_hir::PrimTy::{self, Bool, Char, Float, Int, Str, Strz, Uint};
 use rustc_hir::TraitCandidate;
 use rustc_index::vec::IndexVec;
 use rustc_metadata::creader::{CStore, CrateLoader};
@@ -830,6 +830,7 @@ impl PrimitiveTypeTable {
         table.insert(sym::i64, Int(IntTy::I64));
         table.insert(sym::i128, Int(IntTy::I128));
         table.insert(sym::str, Str);
+        table.insert(sym::strz, Strz);
         table.insert(sym::usize, Uint(UintTy::Usize));
         table.insert(sym::u8, Uint(UintTy::U8));
         table.insert(sym::u16, Uint(UintTy::U16));

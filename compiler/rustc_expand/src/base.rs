@@ -1095,7 +1095,7 @@ pub fn expr_to_spanned_string<'a>(
 
     Err(match expr.kind {
         ast::ExprKind::Lit(ref l) => match l.kind {
-            ast::LitKind::Str(s, style) => return Ok((s, style, expr.span)),
+            ast::LitKind::Str(s, style, ast::StrSuffix::None) => return Ok((s, style, expr.span)),
             ast::LitKind::Err(_) => None,
             _ => Some(cx.struct_span_err(l.span, err_msg)),
         },

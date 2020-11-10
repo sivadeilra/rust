@@ -115,6 +115,7 @@ pub enum TyKind<'tcx> {
 
     /// The pointee of a string slice. Written as `str`.
     Str,
+    Strz,
 
     /// An array with the given length. Written as `[T; n]`.
     Array(Ty<'tcx>, &'tcx ty::Const<'tcx>),
@@ -1919,7 +1920,8 @@ impl<'tcx> TyS<'tcx> {
     /// Returns `true` if this type is a `str`.
     #[inline]
     pub fn is_str(&self) -> bool {
-        *self.kind() == Str
+        // TODO: What about Strz?
+        *self.kind() == Str || *self.kind() == Strz
     }
 
     #[inline]
@@ -1933,7 +1935,7 @@ impl<'tcx> TyS<'tcx> {
     #[inline]
     pub fn is_slice(&self) -> bool {
         match self.kind() {
-            RawPtr(TypeAndMut { ty, .. }) | Ref(_, ty, _) => matches!(ty.kind(), Slice(_) | Str),
+            RawPtr(TypeAndMut { ty, .. }) | Ref(_, ty, _) => matches!(ty.kind(), Slice(_) | Str | Strz),
             _ => false,
         }
     }
@@ -1955,6 +1957,7 @@ impl<'tcx> TyS<'tcx> {
         match self.kind() {
             Array(ty, _) | Slice(ty) => ty,
             Str => tcx.mk_mach_uint(ast::UintTy::U8),
+            Strz => tcx.mk_mach_uint(ast::UintTy::U8),
             _ => bug!("`sequence_element_type` called on non-sequence value: {}", self),
         }
     }
@@ -2292,7 +2295,7 @@ impl<'tcx> TyS<'tcx> {
             | ty::Never
             | ty::Error(_) => true,
 
-            ty::Str | ty::Slice(_) | ty::Dynamic(..) | ty::Foreign(..) => false,
+            ty::Str | ty::Strz | ty::Slice(_) | ty::Dynamic(..) | ty::Foreign(..) => false,
 
             ty::Tuple(tys) => tys.iter().all(|ty| ty.expect_ty().is_trivially_sized(tcx)),
 

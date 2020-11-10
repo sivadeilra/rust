@@ -10,7 +10,7 @@ use rustc_span::symbol::{kw, sym, Symbol};
 use rustc_span::Span;
 
 use std::ascii;
-use tracing::debug;
+use tracing::{debug, info};
 
 pub enum LitError {
     NotLiteral,
@@ -22,8 +22,43 @@ pub enum LitError {
     IntTooLarge,
 }
 
+pub fn get_str_suffix(suffix: Option<Symbol>) -> Result<ast::StrSuffix, LitError> {
+    match suffix {
+        Some(sym::z) => {
+            info!("found strz suffix");
+            Ok(ast::StrSuffix::z)
+        }
+        Some(sym::w) => {
+            info!("found strw suffix");
+            Ok(ast::StrSuffix::w)
+        }
+        Some(sym::wz) => {
+            info!("found strwz suffix");
+            Ok(ast::StrSuffix::wz)
+        }
+        Some(_) => Err(LitError::NotLiteral),
+        None => Ok(ast::StrSuffix::None),
+    }
+}
+
+pub fn check_str_suffix(s: Symbol, suffix: ast::StrSuffix) -> Result<(), LitError> {
+    let is_z = match suffix {
+        ast::StrSuffix::z | ast::StrSuffix::wz => true,
+        _ => false
+    };
+    if is_z {
+        let ss = s.as_str();
+        if ss.chars().any(|c| c == '\0') {
+            info!("strz literals cannot contain a NUL (zero) character.");
+            return Err(LitError::NotLiteral);
+        }
+    }
+    Ok(())
+}
+
 impl LitKind {
     /// Converts literal token into a semantic literal.
+    #[inline(never)]
     fn from_lit_token(lit: token::Lit) -> Result<LitKind, LitError> {
         let token::Lit { kind, symbol, suffix } = lit;
         if suffix.is_some() && !kind.may_have_suffix() {
@@ -72,7 +107,9 @@ impl LitKind {
                     } else {
                         symbol
                     };
-                LitKind::Str(symbol, ast::StrStyle::Cooked)
+                let str_suffix = get_str_suffix(suffix)?;
+                check_str_suffix(symbol, str_suffix)?;
+                LitKind::Str(symbol, ast::StrStyle::Cooked, str_suffix)
             }
             token::StrRaw(n) => {
                 // Ditto.
@@ -93,7 +130,9 @@ impl LitKind {
                     } else {
                         symbol
                     };
-                LitKind::Str(symbol, ast::StrStyle::Raw(n))
+                let str_suffix = get_str_suffix(suffix)?;
+                check_str_suffix(symbol, str_suffix)?;
+                LitKind::Str(symbol, ast::StrStyle::Raw(n), str_suffix)
             }
             token::ByteStr => {
                 let s = symbol.as_str();
@@ -138,14 +177,14 @@ impl LitKind {
     /// by an AST-based macro) or unavailable (e.g. from HIR pretty-printing).
     pub fn to_lit_token(&self) -> token::Lit {
         let (kind, symbol, suffix) = match *self {
-            LitKind::Str(symbol, ast::StrStyle::Cooked) => {
+            LitKind::Str(symbol, ast::StrStyle::Cooked, _) => {
                 // Don't re-intern unless the escaped string is different.
                 let s = symbol.as_str();
                 let escaped = s.escape_default().to_string();
                 let symbol = if s == escaped { symbol } else { Symbol::intern(&escaped) };
                 (token::Str, symbol, None)
             }
-            LitKind::Str(symbol, ast::StrStyle::Raw(n)) => (token::StrRaw(n), symbol, None),
+            LitKind::Str(symbol, ast::StrStyle::Raw(n), _) => (token::StrRaw(n), symbol, None),
             LitKind::ByteStr(ref bytes) => {
                 let string = bytes
                     .iter()
@@ -314,6 +353,10 @@ fn integer_lit(symbol: Symbol, suffix: Option<Symbol>) -> Result<LitKind, LitErr
         // but these kinds of errors are already reported by the lexer.
         let from_lexer =
             base < 10 && s.chars().any(|c| c.to_digit(10).map_or(false, |d| d >= base));
-        if from_lexer { LitError::LexerError } else { LitError::IntTooLarge }
+        if from_lexer {
+            LitError::LexerError
+        } else {
+            LitError::IntTooLarge
+        }
     })
 }

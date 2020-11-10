@@ -199,7 +199,7 @@ impl MetaItem {
     pub fn value_str(&self) -> Option<Symbol> {
         match self.kind {
             MetaItemKind::NameValue(ref v) => match v.kind {
-                LitKind::Str(ref s, _) => Some(*s),
+                LitKind::Str(ref s, _, _) => Some(*s),
                 _ => None,
             },
             _ => None,
@@ -287,7 +287,7 @@ impl Attribute {
 /* Constructors */
 
 pub fn mk_name_value_item_str(ident: Ident, str: Symbol, str_span: Span) -> MetaItem {
-    let lit_kind = LitKind::Str(str, ast::StrStyle::Cooked);
+    let lit_kind = LitKind::str_from_symbol(str);
     mk_name_value_item(ident, lit_kind, str_span)
 }
 

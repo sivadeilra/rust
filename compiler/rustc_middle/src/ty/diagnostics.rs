@@ -13,7 +13,7 @@ impl<'tcx> TyS<'tcx> {
     pub fn is_primitive_ty(&self) -> bool {
         matches!(
             self.kind(),
-            Bool | Char | Str | Int(_) | Uint(_) | Float(_)
+            Bool | Char | Str | Strz | Int(_) | Uint(_) | Float(_)
             | Infer(
                 InferTy::IntVar(_)
                 | InferTy::FloatVar(_)
@@ -30,6 +30,7 @@ impl<'tcx> TyS<'tcx> {
             Bool
             | Char
             | Str
+            | Strz
             | Int(_)
             | Uint(_)
             | Float(_)

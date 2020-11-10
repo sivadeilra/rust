@@ -131,7 +131,7 @@ impl LitKind {
 
     crate fn may_have_suffix(self) -> bool {
         match self {
-            Integer | Float | Err => true,
+            Integer | Float | Err | Str => true,
             _ => false,
         }
     }

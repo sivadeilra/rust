@@ -639,7 +639,7 @@ impl<'mir, 'tcx: 'mir, M: Machine<'mir, 'tcx>> InterpCx<'mir, 'tcx, M> {
                 Ok(Some(self.read_size_and_align_from_vtable(vtable)?))
             }
 
-            ty::Slice(_) | ty::Str => {
+            ty::Slice(_) | ty::Str | ty::Strz => {
                 let len = metadata.unwrap_meta().to_machine_usize(self)?;
                 let elem = layout.field(self, 0)?;
 

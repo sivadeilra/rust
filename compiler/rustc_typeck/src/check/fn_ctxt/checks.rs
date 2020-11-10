@@ -402,7 +402,9 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
         let tcx = self.tcx;
 
         match lit.node {
-            ast::LitKind::Str(..) => tcx.mk_static_str(),
+            ast::LitKind::Str(_, _, ast::StrSuffix::None) => tcx.mk_static_str(),
+            ast::LitKind::Str(_, _, ast::StrSuffix::z) => tcx.mk_static_strz(),
+            ast::LitKind::Str(_, _, _) => unimplemented!("other str suffix variants are nyi"),
             ast::LitKind::ByteStr(ref v) => {
                 tcx.mk_imm_ref(tcx.lifetimes.re_static, tcx.mk_array(tcx.types.u8, v.len() as u64))
             }

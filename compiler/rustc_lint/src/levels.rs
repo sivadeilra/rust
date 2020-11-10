@@ -187,7 +187,7 @@ impl<'s> LintLevelsBuilder<'s> {
                             metas = &metas[0..metas.len() - 1];
                             // FIXME (#55112): issue unused-attributes lint if we thereby
                             // don't have any lint names (`#[level(reason = "foo")]`)
-                            if let ast::LitKind::Str(rationale, _) = name_value.kind {
+                            if let ast::LitKind::Str(rationale, _, _) = name_value.kind {
                                 if !self.sess.features_untracked().lint_reasons {
                                     feature_err(
                                         &self.sess.parse_sess,

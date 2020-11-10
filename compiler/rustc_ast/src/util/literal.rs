@@ -18,25 +18,17 @@ pub enum LitError {
     InvalidSuffix,
     InvalidIntSuffix,
     InvalidFloatSuffix,
+    InvalidStrSuffix,
     NonDecimalFloat(u32),
     IntTooLarge,
 }
 
 pub fn get_str_suffix(suffix: Option<Symbol>) -> Result<ast::StrSuffix, LitError> {
     match suffix {
-        Some(sym::z) => {
-            info!("found strz suffix");
-            Ok(ast::StrSuffix::z)
-        }
-        Some(sym::w) => {
-            info!("found strw suffix");
-            Ok(ast::StrSuffix::w)
-        }
-        Some(sym::wz) => {
-            info!("found strwz suffix");
-            Ok(ast::StrSuffix::wz)
-        }
-        Some(_) => Err(LitError::NotLiteral),
+        Some(sym::z) => Ok(ast::StrSuffix::z),
+        Some(sym::w) => Ok(ast::StrSuffix::w),
+        Some(sym::wz) => Ok(ast::StrSuffix::wz),
+        Some(_) => Err(LitError::InvalidStrSuffix),
         None => Ok(ast::StrSuffix::None),
     }
 }
@@ -44,7 +36,7 @@ pub fn get_str_suffix(suffix: Option<Symbol>) -> Result<ast::StrSuffix, LitError
 pub fn check_str_suffix(s: Symbol, suffix: ast::StrSuffix) -> Result<(), LitError> {
     let is_z = match suffix {
         ast::StrSuffix::z | ast::StrSuffix::wz => true,
-        _ => false
+        _ => false,
     };
     if is_z {
         let ss = s.as_str();

@@ -1469,6 +1469,13 @@ impl<'a> Parser<'a> {
                         .emit();
                 }
             }
+            LitError::InvalidStrSuffix => {
+                let suf = suffix.expect("suffix error with no suffix").as_str();
+                let msg = format!("invalid suffix `{}` for string literal", suf);
+                self.struct_span_err(span, &msg)
+                    .help("the only valid suffix is `z`")
+                    .emit();
+            }
             LitError::NonDecimalFloat(base) => {
                 let descr = match base {
                     16 => "hexadecimal",

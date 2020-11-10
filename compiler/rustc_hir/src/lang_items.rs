@@ -161,10 +161,12 @@ language_item_table! {
     Bool,                    sym::bool,                bool_impl,                  Target::Impl;
     Char,                    sym::char,                char_impl,                  Target::Impl;
     Str,                     sym::str,                 str_impl,                   Target::Impl;
+    Strz,                    sym::strz,                strz_impl,                  Target::Impl;
     Array,                   sym::array,               array_impl,                 Target::Impl;
     Slice,                   sym::slice,               slice_impl,                 Target::Impl;
     SliceU8,                 sym::slice_u8,            slice_u8_impl,              Target::Impl;
     StrAlloc,                sym::str_alloc,           str_alloc_impl,             Target::Impl;
+    StrzAlloc,               sym::strz_alloc,          strz_alloc_impl,            Target::Impl;
     SliceAlloc,              sym::slice_alloc,         slice_alloc_impl,           Target::Impl;
     SliceU8Alloc,            sym::slice_u8_alloc,      slice_u8_alloc_impl,        Target::Impl;
     ConstPtr,                sym::const_ptr,           const_ptr_impl,             Target::Impl;

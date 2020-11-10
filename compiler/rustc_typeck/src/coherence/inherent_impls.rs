@@ -92,6 +92,17 @@ impl ItemLikeVisitor<'v> for InherentCollect<'tcx> {
                     item.span,
                 );
             }
+            ty::Strz => {
+                info!("InherentCollect::visit_item for ty::Strz");
+                self.check_primitive_impl(
+                    def_id,
+                    lang_items.strz_impl(),
+                    lang_items.strz_alloc_impl(),
+                    "strz",
+                    "strz",
+                    item.span,
+                );
+            }
             ty::Slice(slice_item) if slice_item == self.tcx.types.u8 => {
                 self.check_primitive_impl(
                     def_id,

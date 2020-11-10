@@ -1074,6 +1074,7 @@ symbols! {
         structural_peq,
         structural_teq,
         strz,
+        strz_alloc,
         sty,
         sub,
         sub_assign,

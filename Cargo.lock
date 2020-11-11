@@ -461,6 +461,8 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chalk-derive"
 version = "0.32.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2d072b2ba723f0bada7c515d8b3725224bc4f5052d2a92dcbeb0b118ff37084a"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -471,6 +473,8 @@ dependencies = [
 [[package]]
 name = "chalk-engine"
 version = "0.32.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6fb5475f6083d6d6c509e1c335c4f69ad04144ac090faa1afb134a53c3695841"
 dependencies = [
  "chalk-derive",
  "chalk-ir",
@@ -482,6 +486,8 @@ dependencies = [
 [[package]]
 name = "chalk-ir"
 version = "0.32.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f60cdb0e18c5455cb6a85e8464aad3622b70476018edfa8845691df66f7e9a05"
 dependencies = [
  "chalk-derive",
  "lazy_static",
@@ -490,6 +496,8 @@ dependencies = [
 [[package]]
 name = "chalk-solve"
 version = "0.32.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "981534d499a8476ecc0b520be4d3864757f96211826a75360fbf2cb6fae362ab"
 dependencies = [
  "chalk-derive",
  "chalk-ir",
@@ -628,9 +636,9 @@ dependencies = [
 
 [[package]]
 name = "compiler_builtins"
-version = "0.1.36"
+version = "0.1.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7cd0782e0a7da7598164153173e5a5d4d9b1da094473c98dce0ff91406112369"
+checksum = "e3fcd8aba10d17504c87ef12d4f62ef404c6a4703d16682a9eb5543e6cf24455"
 dependencies = [
  "cc",
  "rustc-std-workspace-core",
@@ -680,9 +688,9 @@ dependencies = [
 
 [[package]]
 name = "const_fn"
-version = "0.4.2"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce90df4c658c62f12d78f7508cf92f9173e5184a539c10bfe54a3107b3ffd0f2"
+checksum = "c478836e029dcef17fb47c89023448c64f781a046e0300e257ad8225ae59afab"
 
 [[package]]
 name = "constant_time_eq"
@@ -4148,7 +4156,7 @@ dependencies = [
  "rustc_macros",
  "rustc_serialize",
  "scoped-tls",
- "sha-1 0.9.1",
+ "sha-1 0.9.2",
  "sha2",
  "tracing",
  "unicode-width",
@@ -4516,12 +4524,12 @@ dependencies = [
 
 [[package]]
 name = "sha-1"
-version = "0.9.1"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "170a36ea86c864a3f16dd2687712dd6646f7019f301e57537c7f4dc9f5916770"
+checksum = "ce3cdf1b5e620a498ee6f2a171885ac7e22f0e12089ec4b3d22b84921792507c"
 dependencies = [
  "block-buffer 0.9.0",
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
  "cpuid-bool",
  "digest 0.9.0",
  "opaque-debug 0.3.0",
@@ -5254,7 +5262,7 @@ dependencies = [
  "chrono",
  "lazy_static",
  "matchers",
- "parking_lot 0.9.0",
+ "parking_lot 0.11.0",
  "regex",
  "serde",
  "serde_json",
@@ -5603,15 +5611,3 @@ checksum = "39f0c922f1a334134dc2f7a8b67dc5d25f0735263feec974345ff706bcf20b0d"
 dependencies = [
  "linked-hash-map",
 ]
-
-[[patch.unused]]
-name = "chalk-integration"
-version = "0.32.0"
-
-[[patch.unused]]
-name = "chalk-parse"
-version = "0.32.0"
-
-[[patch.unused]]
-name = "chalk-recursive"
-version = "0.32.0"

@@ -633,6 +633,13 @@ impl<'a, 'tcx> ProbeContext<'a, 'tcx> {
                 let lang_def_id = lang_items.str_alloc_impl();
                 self.assemble_inherent_impl_for_primitive(lang_def_id);
             }
+            ty::Strz => {
+                let lang_def_id = lang_items.strz_impl();
+                self.assemble_inherent_impl_for_primitive(lang_def_id);
+
+                let lang_def_id = lang_items.strz_alloc_impl();
+                self.assemble_inherent_impl_for_primitive(lang_def_id);
+            }
             ty::Slice(_) => {
                 for &lang_def_id in &[
                     lang_items.slice_impl(),

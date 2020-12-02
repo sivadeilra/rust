@@ -2475,7 +2475,7 @@ impl<'a, 'hir> LoweringContext<'a, 'hir> {
     ) -> &'hir [hir::FieldPat<'hir>] {
         let field = hir::FieldPat {
             hir_id: self.next_id(),
-            ident: Ident::new(sym::integer(0), span),
+            ident: Ident::new(sym::zero_digit, span),
             is_shorthand: false,
             pat,
             span,

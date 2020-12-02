@@ -5,6 +5,7 @@
 use rustc_arena::DroplessArena;
 use rustc_data_structures::fx::FxHashMap;
 use rustc_data_structures::stable_hasher::{HashStable, StableHasher, ToStableHashKey};
+use rustc_data_structures::sync::Lock;
 use rustc_macros::HashStable_Generic;
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 
@@ -1248,7 +1249,434 @@ symbols! {
         write_bytes,
         xmm_reg,
         ymm_reg,
+        zero_digit: "0",
         zmm_reg,
+    }
+
+    // This section lists identifiers and strings that are not part of the language (keywords)
+    // or part of the compiler implementation (symbols), but are very common identifiers or
+    // short strings in the Rust standard library and among common crates. Adding a string
+    // or identifier to this last allows us to intern that string at rustc's compile time.
+    // This reduces the amount of heap space used in programs (in the intern table) and
+    // reduces lock contention in parallel builds of the compiler.
+    //
+    // Entries in this list may be identifiers or literal strings.
+    //
+    // The entries in this list came from parsing the Rust standard libraries, the Rust
+    // compiler, and several common public crates (syn, rand). Adding a symbol to this
+    // list has no effect on compilation semantics; this list is solely a performance
+    // optimization.
+    Common {
+        " # Examples",
+        " ```",
+        " }",
+        "'a",
+        "'b",
+        "'c",
+        "'hir",
+        "'ll",
+        "'tcx",
+        "-1.0",
+        "0.0",
+        "0x0",
+        "1.",
+        "1.0",
+        "1.0.0",
+        "100",
+        "16",
+        "2.",
+        "2.0",
+        "32",
+        "64",
+        "\\n",
+        "\\u{0}",
+        "sse4.1",
+        "{:?}",
+        "{}",
+        Attribute,
+        BTreeMap,
+        BTreeSet,
+        Big,
+        Box,
+        Bytes,
+        CStr,
+        Category,
+        Cell,
+        Const,
+        Cow,
+        Cursor,
+        DefId,
+        DefKind,
+        Display,
+        DoubleEndedIterator,
+        Drop,
+        Duration,
+        Element,
+        Expr,
+        ExprKind,
+        Feature,
+        File,
+        Fn,
+        FnMut,
+        FnOnce,
+        Fold,
+        FromInner,
+        FusedIterator,
+        Greater,
+        HANDLE,
+        Handle,
+        HirId,
+        Ident,
+        IndexVec,
+        Instant,
+        Int,
+        IntoIter,
+        IntoVec,
+        Item,
+        ItemKind,
+        Iter,
+        Less,
+        MAX,
+        MIN,
+        Mut,
+        Mutex,
+        Node,
+        NonNull,
+        Operand,
+        OsStr,
+        Path,
+        PhantomData,
+        Read,
+        RefCell,
+        Region,
+        SelfT,
+        SeqCst,
+        Sized,
+        Slice,
+        Span,
+        Status,
+        String,
+        Symbol,
+        TerminatorKind,
+        Type,
+        UnsafeCell,
+        Value,
+        VecDeque,
+        Wrapping,
+        Write,
+        __m128,
+        __m128d,
+        __m128i,
+        __m256,
+        __m256i,
+        aarch64,
+        addr,
+        align_of,
+        amount,
+        android,
+        append,
+        arg,
+        args,
+        as_bytes,
+        as_inner,
+        as_mut,
+        as_mut_ptr,
+        as_ref,
+        as_slice,
+        as_usize,
+        assert_eq,
+        assert_instr,
+        ast,
+        atomic,
+        attrs,
+        avx,
+        avx2,
+        avx512f,
+        back,
+        bar,
+        base,
+        bcx,
+        big,
+        bind,
+        bindings,
+        bit,
+        bits,
+        body,
+        borrow,
+        bounds,
+        boxed,
+        buf,
+        bufs,
+        bug,
+        bx,
+        bytes,
+        c_void,
+        cache,
+        capacity,
+        cause,
+        ch,
+        chain,
+        channel,
+        check,
+        checked_add,
+        checked_sub,
+        child,
+        clear,
+        cloned,
+        cmd,
+        code,
+        codegen,
+        collect,
+        collections,
+        color,
+        connect,
+        contains,
+        copied,
+        count,
+        create,
+        cur,
+        current,
+        cursor,
+        cx,
+        data,
+        debug_assert,
+        def,
+        def_id,
+        dest,
+        document,
+        dom,
+        drain,
+        dst,
+        edge,
+        element,
+        emit,
+        end,
+        entry,
+        enumerate,
+        errno,
+        error,
+        event,
+        exp,
+        expand,
+        extend,
+        fd,
+        fields,
+        filename,
+        first,
+        flag,
+        fold,
+        foo,
+        from_bytes,
+        from_inner,
+        fs,
+        fx,
+        generics,
+        get,
+        get_mut,
+        get_ref,
+        get_unchecked,
+        global,
+        guard,
+        handle,
+        hasher,
+        haystack,
+        head,
+        height,
+        high,
+        hir,
+        hir_id,
+        i16x8,
+        i32x4,
+        id,
+        idx,
+        imm8,
+        infcx,
+        info,
+        init,
+        inner,
+        input,
+        insert,
+        instance,
+        into,
+        into_inner,
+        into_vec,
+        io,
+        is_empty,
+        is_err,
+        is_nan,
+        is_none,
+        is_null,
+        is_ok,
+        is_some,
+        is_x86_feature_detected,
+        it,
+        iter_mut,
+        join,
+        key,
+        last,
+        layout,
+        left,
+        len,
+        length,
+        level,
+        limit,
+        lint,
+        linux,
+        list,
+        little,
+        llvm,
+        lo,
+        load,
+        location,
+        lock,
+        low,
+        mask,
+        matches,
+        max,
+        mem,
+        metadata,
+        mid,
+        min,
+        mir,
+        msg,
+        msvc,
+        mutex,
+        neon,
+        net,
+        next_back,
+        node,
+        none,
+        nth,
+        nth_back,
+        null_mut,
+        obj,
+        object,
+        obligation,
+        ok,
+        old,
+        one,
+        op,
+        opts,
+        order,
+        os,
+        output,
+        param,
+        param_env,
+        parent,
+        parse,
+        parse_str,
+        parser,
+        parts,
+        pc,
+        peek,
+        place,
+        pop,
+        port,
+        pos,
+        pow,
+        powf,
+        predicate,
+        prefix,
+        println,
+        process,
+        ptr,
+        push,
+        query,
+        queue,
+        rc,
+        read,
+        reader,
+        recv,
+        region,
+        remove,
+        repeat,
+        replace,
+        res,
+        reserve,
+        ret,
+        rev,
+        reverse,
+        right,
+        rng,
+        root,
+        rust1,
+        rustc_hir,
+        rustc_middle,
+        rustc_span,
+        sample,
+        scale,
+        see2,
+        seek,
+        send,
+        sess,
+        set,
+        shift,
+        sig,
+        simd128,
+        simd_test,
+        simd_x86,
+        size_hint,
+        skip,
+        socket,
+        source,
+        sp,
+        span,
+        span_label,
+        spawn,
+        split,
+        src,
+        sse,
+        stack,
+        stat,
+        stdout,
+        string,
+        struct_span_err,
+        substs,
+        sum,
+        surface,
+        swap,
+        symbol,
+        sys,
+        tail,
+        take,
+        target,
+        tcx,
+        term,
+        tests,
+        text,
+        this,
+        time,
+        timeout,
+        tmp,
+        to,
+        to_string,
+        token,
+        tokens,
+        trace,
+        tx,
+        types,
+        u16x4,
+        u32x2,
+        u32x4,
+        u64x1,
+        u64x2,
+        u8x8,
+        upper,
+        v128,
+        value,
+        variant,
+        visitor,
+        wait,
+        weight,
+        window,
+        with,
+        with_capacity,
+        write,
+        writer,
+        x86,
+        x86_64,
+        zero,
+        zip,
     }
 }
 
@@ -1446,23 +1874,76 @@ impl Symbol {
         Symbol(SymbolIndex::from_u32(n))
     }
 
-    /// Maps a string to its interned representation.
-    pub fn intern(string: &str) -> Self {
-        with_interner(|interner| interner.intern(string))
+    #[inline(never)]
+    pub fn intern_static(s: &str) -> Option<Symbol> {
+        let sb = s.as_bytes();
+        if sb.len() == 1 {
+            // s.len() == 1 is a special case. It's a single byte. In UTF-8 the only
+            // legal 1-byte encoding is for ASCII, so (as long as the UTF-8 invariants
+            // of &str are upheld), we know that byte 0 is ASCII.
+            Some(Symbol::new(ASCII_SYMBOL_BASE + sb[0] as u32))
+        } else {
+            if let Some(ss) = STATIC_SYMBOLS_PHF.get(s) { Some(*ss) } else { None }
+        }
     }
 
-    /// Access the symbol's chars. This is a slowish operation because it
-    /// requires locking the symbol interner.
-    pub fn with<F: FnOnce(&str) -> R, R>(self, f: F) -> R {
-        with_interner(|interner| f(interner.get(self)))
+    /// Maps a string to its interned representation.
+    pub fn intern(string: &str) -> Self {
+        if let Some(symbol) = Symbol::intern_static(string) {
+            symbol
+        } else {
+            with_interner(|interner| interner.intern_dynamic(string))
+        }
+    }
+
+    pub fn is_static(self) -> bool {
+        self.0.as_u32() < DYNAMIC_SYMBOL_BASE
+    }
+
+    /// Translates the `Symbol` to a static string, but only if this `Symbol`
+    /// was originally interned as a static symbol.
+    pub fn as_str_static(self) -> Option<&'static str> {
+        let symbol_index = self.0.as_u32();
+        if symbol_index < DYNAMIC_SYMBOL_BASE {
+            // This is a well-known symbol. The symbol string is stored in a static field.
+            // There is no need to lock the interner.
+            if symbol_index < STATIC_STRING_SYMBOL_BASE {
+                if symbol_index == 0 {
+                    // 0 represents the empty string.
+                    Some("")
+                } else {
+                    // If we get here, we're in the ASCII single-character string range.
+                    let ascii_char = symbol_index - ASCII_SYMBOL_BASE;
+                    Some(&ASCII_STR[ascii_char as usize..ascii_char as usize + 1])
+                }
+            } else {
+                // This is in the region of static symbols that are mapped to strings.
+                // This excludes the empty string and those symbols that are single
+                // ASCII characters.
+                let string_index = symbol_index - STATIC_STRING_SYMBOL_BASE;
+                Some(&SYMBOL_NAMES[string_index as usize])
+            }
+        } else {
+            None
+        }
     }
 
     /// Convert to a `SymbolStr`. This is a slowish operation because it
     /// requires locking the symbol interner.
+    ///
+    /// If the symbol is a statically-interned symbol (interned at rustc compile time),
+    /// then this operation is fast, and does not acquire any locks.
     pub fn as_str(self) -> SymbolStr {
-        with_interner(|interner| unsafe {
-            SymbolStr { string: std::mem::transmute::<&str, &str>(interner.get(self)) }
-        })
+        if let Some(string) = self.as_str_static() {
+            SymbolStr { string }
+        } else {
+            // This is a dynamic string. The string is stored in the Interner.
+            let dynamic_index = self.as_u32() - DYNAMIC_SYMBOL_BASE;
+            with_interner(|interner| unsafe {
+                let string = interner.get_by_index(dynamic_index);
+                SymbolStr { string: std::mem::transmute::<&str, &str>(string) }
+            })
+        }
     }
 
     pub fn as_u32(self) -> u32 {
@@ -1480,19 +1961,22 @@ impl Symbol {
 
 impl fmt::Debug for Symbol {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.with(|str| fmt::Debug::fmt(&str, f))
+        let s: &str = &*self.as_str();
+        fmt::Debug::fmt(s, f)
     }
 }
 
 impl fmt::Display for Symbol {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.with(|str| fmt::Display::fmt(&str, f))
+        let s: &str = &*self.as_str();
+        fmt::Display::fmt(s, f)
     }
 }
 
 impl<S: Encoder> Encodable<S> for Symbol {
     fn encode(&self, s: &mut S) -> Result<(), S::Error> {
-        self.with(|string| s.emit_str(string))
+        let string: &str = &*self.as_str();
+        s.emit_str(string)
     }
 }
 
@@ -1524,29 +2008,77 @@ impl<CTX> ToStableHashKey<CTX> for Symbol {
 // The `FxHashMap`+`Vec` pair could be replaced by `FxIndexSet`, but #75278
 // found that to regress performance up to 2% in some cases. This might be
 // revisited after further improvements to `indexmap`.
+//
+// Note that `Interner` does not contain any of the statically-known
+// symbol names. It does not contain any of the strings defined in the
+// Keyword, Symbol, or Common sections. Since those strings are
+// statically-known, we just look them up in a table, when needed.
 #[derive(Default)]
 pub struct Interner {
     arena: DroplessArena,
+    /// All of the `Symbol` values in `names` have a numeric value that is
+    /// greater than or equal to `DYNAMIC_SYMBOL_BASE`.
     names: FxHashMap<&'static str, Symbol>,
     strings: Vec<&'static str>,
 }
 
 impl Interner {
-    fn prefill(init: &[&'static str]) -> Self {
-        Interner {
-            strings: init.into(),
-            names: init.iter().copied().zip((0..).map(Symbol::new)).collect(),
-            ..Default::default()
-        }
+    pub fn fresh() -> Self {
+        Self::new()
+    }
+
+    pub fn new() -> Self {
+        Interner { strings: Vec::new(), names: Default::default(), arena: Default::default() }
     }
 
     #[inline]
     pub fn intern(&mut self, string: &str) -> Symbol {
+        if let Some(sym) = Symbol::intern_static(string) {
+            sym
+        } else {
+            self.intern_dynamic(string)
+        }
+    }
+
+    // The `Lock` type will be `Mutex` if `--cfg parallel_compiler` is used,
+    // or it will be a do-nothing wrapper type if the compiler is compiled.
+    // For testing with `Mutex`, use `intern_with_mutex`.
+    pub fn intern_with_lock(this: &Lock<Self>, string: &str) -> Symbol {
+        if let Some(sym) = Symbol::intern_static(string) {
+            sym
+        } else {
+            let mut guard = this.lock();
+            guard.intern_dynamic(string)
+        }
+    }
+
+    pub fn intern_with_mutex(this: &std::sync::Mutex<Self>, string: &str) -> Symbol {
+        if let Some(sym) = Symbol::intern_static(string) {
+            sym
+        } else {
+            let mut guard = this.lock().unwrap();
+            guard.intern_dynamic(string)
+        }
+    }
+
+    #[inline]
+    fn intern_dynamic(&mut self, string: &str) -> Symbol {
+        // The caller should have already checked for static symbols.
+        // Failure to do so is a bug, since this code will mistakenly
+        // intern the static symbol, resulting in a bogus symbol index.
+        // (The whole point of this design is that you can do static
+        // lookups without acquiring the thread-local Interner, so if
+        // we got here with a static symbol, we goofed.)
+        #[cfg(debug_assertions)]
+        {
+            assert!(Symbol::intern_static(string).is_none());
+        }
+
         if let Some(&name) = self.names.get(string) {
             return name;
         }
 
-        let name = Symbol::new(self.strings.len() as u32);
+        let name = Symbol::new(DYNAMIC_SYMBOL_BASE + self.strings.len() as u32);
 
         // `from_utf8_unchecked` is safe since we just allocated a `&str` which is known to be
         // UTF-8.
@@ -1563,7 +2095,15 @@ impl Interner {
     // Get the symbol as a string. `Symbol::as_str()` should be used in
     // preference to this function.
     pub fn get(&self, symbol: Symbol) -> &str {
-        self.strings[symbol.0.as_usize()]
+        if let Some(string) = symbol.as_str_static() {
+            string
+        } else {
+            &self.strings[(symbol.as_u32() - DYNAMIC_SYMBOL_BASE) as usize]
+        }
+    }
+
+    fn get_by_index(&self, symbol_index: u32) -> &str {
+        self.strings[symbol_index as usize]
     }
 }
 
@@ -1572,6 +2112,7 @@ impl Interner {
 ///
 /// Given that `kw` is imported, use them like `kw::keyword_name`.
 /// For example `kw::Loop` or `kw::Break`.
+#[allow(non_upper_case_globals)]
 pub mod kw {
     use super::Symbol;
     keywords!();
@@ -1592,12 +2133,14 @@ pub mod sym {
     // Used from a macro in `librustc_feature/accepted.rs`
     pub use super::kw::MacroRules as macro_rules;
 
+    pub const ZERO: Symbol = Symbol::new(super::ASCII_SYMBOL_BASE + '0' as u32);
+
     // Get the symbol for an integer. The first few non-negative integers each
     // have a static symbol and therefore are fast.
     pub fn integer<N: TryInto<usize> + Copy + ToString>(n: N) -> Symbol {
         if let Result::Ok(idx) = n.try_into() {
-            if let Option::Some(&sym_) = digits_array.get(idx) {
-                return sym_;
+            if idx < 10 {
+                return Symbol::new(super::DIGITS_BASE_INDEX + idx as u32);
             }
         }
         Symbol::intern(&n.to_string())
@@ -1638,7 +2181,10 @@ impl Ident {
     // Returns `true` for reserved identifiers used internally for elided lifetimes,
     // unnamed method parameters, crate root module, error recovery etc.
     pub fn is_special(self) -> bool {
-        self.name <= kw::Underscore
+        match self.name {
+            kw::Invalid | kw::PathRoot | kw::DollarCrate | kw::Underscore => true,
+            _ => false,
+        }
     }
 
     /// Returns `true` if the token is a keyword used in the language.

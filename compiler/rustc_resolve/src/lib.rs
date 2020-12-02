@@ -2414,10 +2414,9 @@ impl<'a> Resolver<'a> {
                             (format!("maybe a missing crate `{}`?", ident), None)
                         }
                     } else if i == 0 {
-                        if ident
-                            .name
-                            .with(|n| n.chars().next().map_or(false, |c| c.is_ascii_uppercase()))
-                        {
+                        let ident_name_str = ident.name.as_str();
+                        let n = &*ident_name_str;
+                        if n.chars().next().map_or(false, |c| c.is_ascii_uppercase()) {
                             (format!("use of undeclared type `{}`", ident), None)
                         } else {
                             (format!("use of undeclared crate or module `{}`", ident), None)

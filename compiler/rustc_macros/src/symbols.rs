@@ -34,6 +34,7 @@ mod tests;
 mod kw {
     syn::custom_keyword!(Keywords);
     syn::custom_keyword!(Symbols);
+    syn::custom_keyword!(Common);
 }
 
 struct Keyword {
@@ -68,9 +69,30 @@ impl Parse for Symbol {
     }
 }
 
+struct CommonWord {
+    value: String,
+    span: Span,
+}
+
+impl Parse for CommonWord {
+    fn parse(input: ParseStream<'_>) -> Result<Self> {
+        let la = input.lookahead1();
+        if la.peek(Ident) {
+            let id: Ident = input.parse()?;
+            Ok(Self { value: id.to_string(), span: id.span() })
+        } else if la.peek(LitStr) {
+            let str: LitStr = input.parse()?;
+            Ok(Self { value: str.value(), span: str.span() })
+        } else {
+            Err(la.error())
+        }
+    }
+}
+
 struct Input {
     keywords: Punctuated<Keyword, Token![,]>,
     symbols: Punctuated<Symbol, Token![,]>,
+    commons: Punctuated<CommonWord, Token![,]>,
 }
 
 impl Parse for Input {
@@ -85,7 +107,12 @@ impl Parse for Input {
         braced!(content in input);
         let symbols = Punctuated::parse_terminated(&content)?;
 
-        Ok(Input { keywords, symbols })
+        input.parse::<kw::Common>()?;
+        let content;
+        braced!(content in input);
+        let commons = Punctuated::parse_terminated(&content)?;
+
+        Ok(Input { keywords, symbols, commons })
     }
 }
 
@@ -99,6 +126,39 @@ impl Errors {
         self.list.push(syn::Error::new(span, message));
     }
 }
+
+/// Checks whether `s` contains exactly one character, and that character is ASCII.
+/// If so, returns `Some(symbol_index)` where `symbol_index` is the symbol index of
+/// that character.
+fn is_ascii_symbol(s: &str) -> Option<u32> {
+    let b = s.as_bytes();
+    if b.len() == 1 {
+        // All single-byte encodings of UTF-8 are ASCII.
+        Some(b[0] as u32 + ASCII_SYMBOL_BASE)
+    } else {
+        None
+    }
+}
+
+// Each 'Symbol' value can address either static values (known at compile time)
+// or dynamic values (discovered at runtime). The static values use identifiers
+// that are stored contiguously, numbering from 0 to NUM_SYMBOLS - 1. All values
+// starting at NUM_SYMBOLS and higher are used for dynamic values.
+//
+// Within the set of static symbols, we choose the assignment of symbols in order
+// to make some things easier.
+//
+//      * The empty string "" symbol has index 0.
+//      * The ASCII character set (0x00 to 0x7f inclusive) are assigned immediately
+//        after the empty string, and so use values 0x01 to 0x80. Converting
+//        between the symbol index and ASCII requires adding/subtracting 1.
+
+const ASCII_SYMBOL_BASE: u32 = 1;
+const ASCII_SYMBOL_LEN: u32 = 0x80;
+
+// This is the base symbol index for keyword/symbol/common strings,
+// except for "" and ASCII single-character strings.
+const STATIC_STRING_SYMBOL_BASE: u32 = ASCII_SYMBOL_BASE + ASCII_SYMBOL_LEN;
 
 pub fn symbols(input: TokenStream) -> TokenStream {
     let (mut output, errors) = symbols_with_errors(input);
@@ -120,15 +180,16 @@ fn symbols_with_errors(input: TokenStream) -> (TokenStream, Vec<syn::Error>) {
             // This allows us to display errors at the proper span, while minimizing
             // unrelated errors caused by bailing out (and not generating code).
             errors.list.push(e);
-            Input { keywords: Default::default(), symbols: Default::default() }
+            Input {
+                keywords: Default::default(),
+                symbols: Default::default(),
+                commons: Default::default(),
+            }
         }
     };
 
     let mut keyword_stream = quote! {};
     let mut symbols_stream = quote! {};
-    let mut digits_stream = quote! {};
-    let mut prefill_stream = quote! {};
-    let mut counter = 0u32;
     let mut keys =
         HashMap::<String, Span>::with_capacity(input.keywords.len() + input.symbols.len() + 10);
     let mut prev_key: Option<(Span, String)> = None;
@@ -152,21 +213,36 @@ fn symbols_with_errors(input: TokenStream) -> (TokenStream, Vec<syn::Error>) {
         prev_key = Some((span, str.to_string()));
     };
 
+    let mut symbol_names: Vec<String> = Vec::new();
+
     // Generate the listed keywords.
     for keyword in input.keywords.iter() {
         let name = &keyword.name;
         let value = &keyword.value;
         let value_string = value.value();
         check_dup(keyword.name.span(), &value_string, &mut errors);
-        prefill_stream.extend(quote! {
-            #value,
-        });
+
+        let symbol_index = if value_string.is_empty() {
+            // Special case. Symbol index is always zero.
+            0
+        } else if let Some(ascii_symbol_index) = is_ascii_symbol(&value_string) {
+            // This symbol is a single ASCII character.
+            // It is represented differently.
+            // We use the symbol index of the ASCII character, instead of assigning
+            // a new symbol index.
+            ascii_symbol_index
+        } else {
+            let symbol_index = STATIC_STRING_SYMBOL_BASE + symbol_names.len() as u32;
+            symbol_names.push(value_string);
+            symbol_index
+        };
+
         keyword_stream.extend(quote! {
-            #[allow(non_upper_case_globals)]
-            pub const #name: Symbol = Symbol::new(#counter);
+            pub const #name: Symbol = Symbol::new(#symbol_index);
         });
-        counter += 1;
     }
+
+    let non_keyword_symbol_base = STATIC_STRING_SYMBOL_BASE + symbol_names.len() as u32;
 
     // Generate the listed symbols.
     for symbol in input.symbols.iter() {
@@ -178,31 +254,55 @@ fn symbols_with_errors(input: TokenStream) -> (TokenStream, Vec<syn::Error>) {
         check_dup(symbol.name.span(), &value, &mut errors);
         check_order(symbol.name.span(), &name.to_string(), &mut errors);
 
-        prefill_stream.extend(quote! {
-            #value,
-        });
+        // The empty string is covered by the Keywords { Invalid: "" } case.
+        assert!(!value.is_empty());
+
+        let symbol_index = if let Some(ascii_symbol_index) = is_ascii_symbol(&value) {
+            // This symbol is a single ASCII character.
+            // It is represented differently.
+            ascii_symbol_index
+        } else {
+            let symbol_index = STATIC_STRING_SYMBOL_BASE + symbol_names.len() as u32;
+            symbol_names.push(value);
+            symbol_index
+        };
         symbols_stream.extend(quote! {
             #[allow(rustc::default_hash_types)]
             #[allow(non_upper_case_globals)]
-            pub const #name: Symbol = Symbol::new(#counter);
+            pub const #name: Symbol = Symbol::new(#symbol_index);
         });
-        counter += 1;
     }
 
-    // Generate symbols for the strings "0", "1", ..., "9".
-    for n in 0..10 {
-        let n = n.to_string();
-        check_dup(Span::call_site(), &n, &mut errors);
-        prefill_stream.extend(quote! {
-            #n,
-        });
-        digits_stream.extend(quote! {
-            Symbol::new(#counter),
-        });
-        counter += 1;
+    // Add common words. These are added to the static set of strings that
+    // we recognize, but we do not define any symbol that points to the
+    // symbol index.
+    for common in input.commons.iter() {
+        let common_value = &common.value;
+        if is_ascii_symbol(common_value).is_some() {
+            errors.error(common.span, format!("common string {:?} is unnecessary; all strings consisting of a single ASCII character are interned.", common_value));
+            continue;
+        }
+        check_dup(common.span, common_value, &mut errors);
+        symbol_names.push(common_value.to_string());
     }
 
-    let output = quote! {
+    let symbol_names_len = symbol_names.len();
+
+    let symbol_names_tokens: proc_macro2::TokenStream =
+        symbol_names.iter().map(|s| quote!(#s,)).collect();
+
+    // Build the PHF map. This translates from strings to Symbol values.
+    let mut phf_map = phf_codegen::Map::<&str>::new();
+    phf_map.entry("", "Symbol::new(0)");
+    for (index, symbol) in symbol_names.iter().enumerate() {
+        let real_symbol_index = STATIC_STRING_SYMBOL_BASE + index as u32;
+        phf_map.entry(symbol, format!("Symbol::new({})", real_symbol_index).as_str());
+    }
+    let phf_map_built = phf_map.build();
+    let phf_map_text = phf_map_built.to_string();
+    let phf_map_expr = syn::parse_str::<syn::Expr>(&phf_map_text).unwrap();
+
+    let mut output = quote! {
         macro_rules! keywords {
             () => {
                 #keyword_stream
@@ -212,22 +312,33 @@ fn symbols_with_errors(input: TokenStream) -> (TokenStream, Vec<syn::Error>) {
         macro_rules! define_symbols {
             () => {
                 #symbols_stream
+            }
+        }
 
-                #[allow(non_upper_case_globals)]
-                pub const digits_array: &[Symbol; 10] = &[
-                    #digits_stream
+        const DIGITS_BASE_INDEX: u32 = ASCII_SYMBOL_BASE + '0' as u32;
+        const ASCII_SYMBOL_BASE: u32 = #ASCII_SYMBOL_BASE;
+        const ASCII_SYMBOL_LEN: u32 = #ASCII_SYMBOL_LEN;
+        const STATIC_STRING_SYMBOL_BASE: u32 = #STATIC_STRING_SYMBOL_BASE;
+        const DYNAMIC_SYMBOL_BASE: u32 = 1 + ASCII_SYMBOL_LEN + #symbol_names_len as u32;
+        const NON_KEYWORD_SYMBOL_BASE: u32 = #non_keyword_symbol_base;
+
+        pub static SYMBOL_NAMES: [&str; #symbol_names_len as usize] = [
+            #symbol_names_tokens
                 ];
-            }
-        }
 
-        impl Interner {
-            pub fn fresh() -> Self {
-                Interner::prefill(&[
-                    #prefill_stream
-                ])
-            }
-        }
+        static STATIC_SYMBOLS_PHF: ::phf::Map<&'static str, Symbol> = #phf_map_expr;
     };
+
+    // Generate the ASCII_STR static string.
+    let mut ascii_str = String::with_capacity(0x80);
+    for c in 0u8..0x80u8 {
+        ascii_str.push(char::from(c));
+        }
+    output.extend(quote! {
+        /// This string contains all of the characters of ASCII, in order.
+        /// This is necessary for the implementation of `Symbol::as_str`.
+        static ASCII_STR: &str = #ascii_str;
+    });
 
     (output, errors.list)
 

@@ -1785,6 +1785,7 @@ supported_targets! {
     ("aarch64-unknown-linux-gnu", aarch64_unknown_linux_gnu),
     ("aarch64-unknown-linux-musl", aarch64_unknown_linux_musl),
     ("x86_64-unknown-linux-musl", x86_64_unknown_linux_musl),
+    ("x86_64-underhill-linux-musl", x86_64_underhill_linux_musl),
     ("i686-unknown-linux-musl", i686_unknown_linux_musl),
     ("i586-unknown-linux-musl", i586_unknown_linux_musl),
     ("mips-unknown-linux-musl", mips_unknown_linux_musl),
@@ -1920,6 +1921,11 @@ supported_targets! {
     ("i686-win7-windows-msvc", i686_win7_windows_msvc),
     ("thumbv7a-pc-windows-msvc", thumbv7a_pc_windows_msvc),
     ("thumbv7a-uwp-windows-msvc", thumbv7a_uwp_windows_msvc),
+
+    ("aarch64-pc-onecore-msvc", aarch64_pc_onecore_msvc),
+    ("x86_64-pc-onecore-msvc", x86_64_pc_onecore_msvc),
+    ("i686-pc-onecore-msvc", i686_pc_onecore_msvc),
+    ("thumbv7a-pc-onecore-msvc", thumbv7a_pc_onecore_msvc),
 
     ("wasm32-unknown-emscripten", wasm32_unknown_emscripten),
     ("wasm32-unknown-unknown", wasm32_unknown_unknown),

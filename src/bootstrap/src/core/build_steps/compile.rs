@@ -616,6 +616,13 @@ pub fn std_cargo(builder: &Builder<'_>, target: TargetSelection, stage: u32, car
             .arg(builder.src.join("library/alloc/Cargo.toml"))
             .arg("--features")
             .arg(features);
+
+        // Windows OneCore targets disable Global OOM handling.
+        if target.contains("onecore") {
+            cargo.rustflag("--cfg").rustflag("no_global_oom_handling");
+            cargo.rustflag("-A").rustflag("dead-code");
+            cargo.rustflag("-A").rustflag("unused-imports");
+        }
     } else {
         features += &builder.std_features(target);
         features.push_str(compiler_builtins_c_feature);

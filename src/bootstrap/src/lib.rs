@@ -715,7 +715,7 @@ impl Build {
             LlvmLibunwind::No => false,
         };
 
-        if self.config.backtrace {
+        if self.config.backtrace && !target.contains("-underhill-linux-") {
             features.insert("backtrace");
         }
 

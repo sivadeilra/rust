@@ -425,9 +425,8 @@ pub(crate) unsafe fn create_module<'ll>(
             1,
         );
     }
-
     // Set module flag to enable Windows EHCont Guard (/guard:ehcont).
-    if sess.opts.unstable_opts.ehcont_guard {
+    if sess.opts.cg.ehcont_guard || sess.opts.unstable_opts.ehcont_guard {
         llvm::add_module_flag_u32(llmod, llvm::ModuleFlagMergeBehavior::Warning, "ehcontguard", 1);
     }
 

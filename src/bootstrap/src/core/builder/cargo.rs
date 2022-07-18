@@ -1119,7 +1119,9 @@ impl Builder<'_> {
         // This is not needed for stage 0 artifacts because these will only be used for building
         // the stage 1 compiler.
         if cfg!(windows) && mode == Mode::Std && self.config.ehcont_guard && compiler.stage >= 1 {
-            rustflags.arg("-Zehcont-guard");
+            // INTERNAL TOOLCHAIN NOTE: upstream has the unstable -Z flag, but we use the internal
+            // pre-stabilized -C flag here.
+            rustflags.arg("-Cehcont-guard");
         }
 
         // For `cargo doc` invocations, make rustdoc print the Rust version into the docs

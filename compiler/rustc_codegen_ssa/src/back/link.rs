@@ -2606,7 +2606,7 @@ fn add_order_independent_options(
     }
 
     // OBJECT-FILES-NO, AUDIT-ORDER
-    if sess.opts.unstable_opts.ehcont_guard {
+    if sess.opts.unstable_opts.ehcont_guard || sess.opts.cg.ehcont_guard {
         cmd.ehcont_guard();
     }
 

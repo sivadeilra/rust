@@ -1,4 +1,4 @@
-use crate::spec::{FloatAbi, PanicStrategy, Target, TargetMetadata, TargetOptions, base};
+use crate::spec::{FloatAbi, PanicStrategy, StackProtector, Target, TargetMetadata, TargetOptions, base};
 
 pub(crate) fn target() -> Target {
     Target {
@@ -19,6 +19,10 @@ pub(crate) fn target() -> Target {
             // FIXME(jordanrh): use PanicStrategy::Unwind when SEH is
             // implemented for windows/arm in LLVM
             panic_strategy: PanicStrategy::Abort,
+            // Enabling stack protection leads to LLVM asserting when generating relocations
+            // on thumbv7a Windows-msvc targets. Since these are being deprecated anyway,
+            // we're just going to disable it for now.
+            stack_protector: StackProtector::None,
             ..base::windows_uwp_msvc::opts()
         },
     }

@@ -863,7 +863,7 @@ fn test_unstable_options_tracking_hash() {
     tracked!(small_data_threshold, Some(16));
     tracked!(split_lto_unit, Some(true));
     tracked!(src_hash_algorithm, Some(SourceFileHashAlgorithm::Sha1));
-    tracked!(stack_protector, StackProtector::All);
+    tracked!(stack_protector, Some(StackProtector::All));
     tracked!(teach, true);
     tracked!(thinlto, Some(true));
     tracked!(tiny_const_eval_limit, true);

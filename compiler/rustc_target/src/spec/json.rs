@@ -4,7 +4,7 @@ use std::str::FromStr;
 
 use serde_json::Value;
 
-use super::{Target, TargetKind, TargetOptions, TargetWarnings};
+use super::{StackProtector, Target, TargetKind, TargetOptions, TargetWarnings};
 use crate::json::{Json, ToJson};
 
 impl Target {
@@ -527,6 +527,18 @@ impl Target {
                     }
                 })).unwrap_or(Ok(()))
             } );
+            ($key_name:ident, StackProtector) => ( {
+                let name = (stringify!($key_name)).replace("_", "-");
+                obj.remove(&name).and_then(|o| o.as_str().and_then(|s| {
+                    match StackProtector::from_str(s) {
+                        Ok(sp) => {
+                            base.$key_name = sp;
+                            Some(Ok(()))
+                        }
+                        _ => Some(Err(format!("'{s}' is not a valid value for stack_protector"))),
+                    }
+                })).unwrap_or(Ok(()))
+            } );
         }
 
         if let Some(j) = obj.remove("target-endian") {
@@ -659,6 +671,7 @@ impl Target {
         key!(generate_arange_section, bool);
         key!(supports_stack_protector, bool);
         key!(small_data_threshold_support, SmallDataThresholdSupport)?;
+        key!(stack_protector, StackProtector)?;
         key!(entry_name);
         key!(entry_abi, Conv)?;
         key!(supports_xray, bool);
@@ -839,6 +852,7 @@ impl ToJson for Target {
         target_option_val!(generate_arange_section);
         target_option_val!(supports_stack_protector);
         target_option_val!(small_data_threshold_support);
+        target_option_val!(stack_protector);
         target_option_val!(entry_name);
         target_option_val!(entry_abi);
         target_option_val!(supports_xray);

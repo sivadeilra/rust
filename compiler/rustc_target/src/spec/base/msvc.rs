@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use crate::spec::{BinaryFormat, DebuginfoKind, LinkerFlavor, Lld, SplitDebuginfo, TargetOptions};
+use crate::spec::{BinaryFormat, DebuginfoKind, LinkerFlavor, Lld, SplitDebuginfo, StackProtector, TargetOptions};
 
 pub(crate) fn opts() -> TargetOptions {
     // Suppress the verbose logo and authorship debugging output, which would needlessly
@@ -23,6 +23,8 @@ pub(crate) fn opts() -> TargetOptions {
         split_debuginfo: SplitDebuginfo::Packed,
         supported_split_debuginfo: Cow::Borrowed(&[SplitDebuginfo::Packed]),
         debuginfo_kind: DebuginfoKind::Pdb,
+
+        stack_protector: StackProtector::Strong,
 
         ..Default::default()
     }

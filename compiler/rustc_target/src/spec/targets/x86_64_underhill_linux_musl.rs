@@ -1,4 +1,4 @@
-use crate::spec::{base, Cc, LinkerFlavor, Lld, PanicStrategy, SanitizerSet, StackProbeType, Target, TargetMetadata};
+use crate::spec::{base, Cc, LinkerFlavor, Lld, PanicStrategy, SanitizerSet, StackProbeType, StackProtector, Target, TargetMetadata};
 
 pub(crate) fn target() -> Target {
     let mut base = base::linux_musl::opts();
@@ -11,6 +11,7 @@ pub(crate) fn target() -> Target {
     base.static_position_independent_executables = true;
     base.supported_sanitizers = SanitizerSet::empty();
     base.crt_static_default = true;
+    base.stack_protector = StackProtector::Strong;
 
     Target {
         llvm_target: "x86_64-unknown-linux-musl".into(),

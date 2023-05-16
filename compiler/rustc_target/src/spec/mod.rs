@@ -1627,6 +1627,12 @@ impl StackProtector {
     }
 }
 
+impl ToJson for StackProtector {
+    fn to_json(&self) -> Json {
+        self.as_str().to_json()
+    }
+}
+
 impl FromStr for StackProtector {
     type Err = ();
 
@@ -2656,6 +2662,9 @@ pub struct TargetOptions {
     /// Whether the target supports stack canary checks. `true` by default,
     /// since this is most common among tier 1 and tier 2 targets.
     pub supports_stack_protector: bool,
+    /// The stack protector codegen option to use if another option is not requested.
+    /// Defaults to `StackProtector::None`.
+    pub stack_protector: StackProtector,
 
     /// The name of entry function.
     /// Default value is "main"
@@ -2893,6 +2902,7 @@ impl Default for TargetOptions {
             c_enum_min_bits: None,
             generate_arange_section: true,
             supports_stack_protector: true,
+            stack_protector: StackProtector::None,
             entry_name: "main".into(),
             entry_abi: Conv::C,
             supports_xray: false,

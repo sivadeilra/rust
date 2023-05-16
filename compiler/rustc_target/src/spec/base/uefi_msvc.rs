@@ -9,7 +9,7 @@
 // the timer-interrupt. Device-drivers are required to use polling-based models. Furthermore, all
 // code runs in the same environment, no process separation is supported.
 
-use crate::spec::{LinkerFlavor, Lld, PanicStrategy, StackProbeType, TargetOptions, base};
+use crate::spec::{LinkerFlavor, Lld, PanicStrategy, StackProbeType, StackProtector, TargetOptions, base};
 
 pub(crate) fn opts() -> TargetOptions {
     let mut base = base::msvc::opts();
@@ -47,6 +47,7 @@ pub(crate) fn opts() -> TargetOptions {
         singlethread: true,
         linker: Some("rust-lld".into()),
         entry_name: "efi_main".into(),
+        stack_protector: StackProtector::None,
         ..base
     }
 }

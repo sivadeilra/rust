@@ -333,7 +333,7 @@ pub(crate) trait Linker {
     fn optimize(&mut self);
     fn pgo_gen(&mut self);
     fn control_flow_guard(&mut self);
-    fn ehcont_guard(&mut self);
+    fn ehcont_guard(&mut self) {}
     fn debuginfo(&mut self, strip: Strip, natvis_debugger_visualizers: &[PathBuf]);
     fn no_crt_objects(&mut self);
     fn no_default_libraries(&mut self);

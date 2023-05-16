@@ -773,7 +773,7 @@ impl Session {
 
     pub fn stack_protector(&self) -> StackProtector {
         if self.target.options.supports_stack_protector {
-            self.opts.unstable_opts.stack_protector
+            self.opts.unstable_opts.stack_protector.unwrap_or(self.target.stack_protector)
         } else {
             StackProtector::None
         }
@@ -1310,10 +1310,10 @@ fn validate_commandline_args_with_session_available(sess: &Session) {
         }
     }
 
-    if sess.opts.unstable_opts.stack_protector != StackProtector::None {
+    if let Some(sp) = sess.opts.unstable_opts.stack_protector && sp != StackProtector::None {
         if !sess.target.options.supports_stack_protector {
             sess.dcx().emit_warn(errors::StackProtectorNotSupportedForTarget {
-                stack_protector: sess.opts.unstable_opts.stack_protector,
+                stack_protector: sp,
                 target_triple: &sess.opts.target_triple,
             });
         }

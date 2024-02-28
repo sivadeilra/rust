@@ -1,4 +1,4 @@
-use crate::spec::{SanitizerSet, StackProbeType, Target, TargetMetadata, TargetOptions, base};
+use crate::spec::{FramePointer, SanitizerSet, StackProbeType, Target, TargetMetadata, TargetOptions, base};
 
 pub(crate) fn target() -> Target {
     let mut base = base::linux_musl::opts();
@@ -6,6 +6,7 @@ pub(crate) fn target() -> Target {
     base.supports_xray = true;
     base.features = "+v8a".into();
     base.stack_probes = StackProbeType::Inline;
+    base.frame_pointer = FramePointer::NonLeaf;
     base.supported_sanitizers = SanitizerSet::ADDRESS
         | SanitizerSet::CFI
         | SanitizerSet::LEAK

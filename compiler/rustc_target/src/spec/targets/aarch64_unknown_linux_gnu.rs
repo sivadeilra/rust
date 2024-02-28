@@ -1,4 +1,4 @@
-use crate::spec::{SanitizerSet, StackProbeType, Target, TargetMetadata, TargetOptions, base};
+use crate::spec::{FramePointer, SanitizerSet, StackProbeType, Target, TargetMetadata, TargetOptions, base};
 
 pub(crate) fn target() -> Target {
     Target {
@@ -26,6 +26,7 @@ pub(crate) fn target() -> Target {
                 | SanitizerSet::THREAD
                 | SanitizerSet::HWADDRESS,
             supports_xray: true,
+            frame_pointer: FramePointer::NonLeaf,
             ..base::linux_gnu::opts()
         },
     }

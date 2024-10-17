@@ -914,7 +914,6 @@ impl<'a> Builder<'a> {
                 tool::OptimizedDist,
                 tool::CoverageDump,
                 tool::LlvmBitcodeLinker,
-                tool::RustcPerf,
             ),
             Kind::Clippy => describe!(
                 clippy::Std,

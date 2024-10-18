@@ -1466,7 +1466,13 @@ Executed at: {executed_at}"#,
     ///
     /// This requires that both the `extended` key is set and the `tools` key is
     /// either unset or specifically contains the specified tool.
+    ///
+    /// For the MS-internal toolchain, we do not support `wasm-component-ld`,
+    /// so this function always returns `false`.
     fn tool_enabled(&self, tool: &str) -> bool {
+        if tool == "wasm-component-ld" {
+            return false;
+        }
         if !self.config.extended {
             return false;
         }

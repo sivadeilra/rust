@@ -37,7 +37,7 @@ use rustc_target::spec::{
 use crate::code_stats::CodeStats;
 pub use crate::code_stats::{DataTypeKind, FieldInfo, FieldKind, SizeKind, VariantInfo};
 use crate::config::{
-    self, CoverageLevel, CrateType, DebugInfo, ErrorOutputType, FunctionReturn, Input,
+    self, CFGuard, CoverageLevel, CrateType, DebugInfo, ErrorOutputType, FunctionReturn, Input,
     InstrumentCoverage, OptLevel, OutFileName, OutputType, RemapPathScopeComponents,
     SwitchWithOptPath,
 };
@@ -777,6 +777,18 @@ impl Session {
         } else {
             StackProtector::None
         }
+    }
+
+    pub fn control_flow_guard(&self) -> CFGuard {
+        self.opts.cg.control_flow_guard.unwrap_or(
+            // Enable Control Flow Guard automatically for msvc targets but don't turn it
+            // on for UEFI targets which are also "like msvc" but are more akin to bare metal.
+            if self.target.is_like_msvc && self.target.os != "uefi" {
+                CFGuard::Checks
+            } else {
+                CFGuard::Disabled
+            }
+        )
     }
 
     pub fn must_emit_unwind_tables(&self) -> bool {

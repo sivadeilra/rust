@@ -2601,7 +2601,7 @@ fn add_order_independent_options(
         cmd.pgo_gen();
     }
 
-    if sess.opts.cg.control_flow_guard != CFGuard::Disabled {
+    if sess.control_flow_guard() != CFGuard::Disabled {
         cmd.control_flow_guard();
     }
 

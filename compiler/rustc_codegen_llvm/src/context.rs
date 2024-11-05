@@ -335,7 +335,7 @@ pub(crate) unsafe fn create_module<'ll>(
             && sess.target.options.env == "gnu"
             && sess.target.options.abi == "llvm")
     {
-        match sess.opts.cg.control_flow_guard {
+        match sess.control_flow_guard() {
             CFGuard::Disabled => {}
             CFGuard::NoChecks => {
                 // Set `cfguard=1` module flag to emit metadata only.

@@ -611,7 +611,7 @@ fn test_codegen_options_tracking_hash() {
     // tidy-alphabetical-start
     tracked!(code_model, Some(CodeModel::Large));
     tracked!(collapse_macro_debuginfo, CollapseMacroDebuginfo::Yes);
-    tracked!(control_flow_guard, CFGuard::Checks);
+    tracked!(control_flow_guard, Some(CFGuard::Checks));
     tracked!(debug_assertions, Some(true));
     tracked!(debuginfo, DebugInfo::Limited);
     tracked!(dwarf_version, Some(5));

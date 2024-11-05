@@ -1208,21 +1208,21 @@ pub mod parse {
         true
     }
 
-    pub(crate) fn parse_cfguard(slot: &mut CFGuard, v: Option<&str>) -> bool {
+    pub(crate) fn parse_cfguard(slot: &mut Option<CFGuard>, v: Option<&str>) -> bool {
         if v.is_some() {
             let mut bool_arg = None;
             if parse_opt_bool(&mut bool_arg, v) {
-                *slot = if bool_arg.unwrap() { CFGuard::Checks } else { CFGuard::Disabled };
+                *slot = Some(if bool_arg.unwrap() { CFGuard::Checks } else { CFGuard::Disabled });
                 return true;
             }
         }
 
-        *slot = match v {
+        *slot = Some(match v {
             None => CFGuard::Checks,
             Some("checks") => CFGuard::Checks,
             Some("nochecks") => CFGuard::NoChecks,
             Some(_) => return false,
-        };
+        });
         true
     }
 
@@ -1947,7 +1947,7 @@ options! {
     collapse_macro_debuginfo: CollapseMacroDebuginfo = (CollapseMacroDebuginfo::Unspecified,
         parse_collapse_macro_debuginfo, [TRACKED],
         "set option to collapse debuginfo for macros"),
-    control_flow_guard: CFGuard = (CFGuard::Disabled, parse_cfguard, [TRACKED],
+    control_flow_guard: Option<CFGuard> = (None, parse_cfguard, [TRACKED],
         "use Windows Control Flow Guard (default: no)"),
     debug_assertions: Option<bool> = (None, parse_opt_bool, [TRACKED],
         "explicitly enable the `cfg(debug_assertions)` directive"),

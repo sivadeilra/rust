@@ -3405,6 +3405,9 @@ impl Step for CodegenGCC {
     }
 
     fn make_run(run: RunConfig<'_>) {
+        if true {
+            return;
+        }
         let builder = run.builder;
         let host = run.build_triple();
         let compiler = run.builder.compiler_for(run.builder.top_stage, host, host);

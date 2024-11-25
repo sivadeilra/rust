@@ -34,11 +34,11 @@ impl Step for Gcc {
     const ONLY_HOSTS: bool = true;
 
     fn should_run(run: ShouldRun<'_>) -> ShouldRun<'_> {
-        run.path("src/gcc").alias("gcc")
+        run.never()
     }
 
-    fn make_run(run: RunConfig<'_>) {
-        run.builder.ensure(Gcc { target: run.target });
+    fn make_run(_run: RunConfig<'_>) {
+        return;
     }
 
     /// Compile GCC (specifically `libgccjit`) for `target`.

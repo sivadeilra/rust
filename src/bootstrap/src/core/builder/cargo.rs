@@ -1124,6 +1124,23 @@ impl Builder<'_> {
             rustflags.arg("-Cehcont-guard");
         }
 
+        // Check if we should use shadow stack for BinSkim compliance when targeting msvc.
+        fn needs_cetcompat(target: TargetSelection) -> bool {
+            // Note: /CETCOMPAT is not supported on ARM.
+            target.is_msvc() && (target.starts_with("i686-") || target.starts_with("x86_64-"))
+        }
+
+        // RUSTFLAGS are only respected for the target, so if the target needs /CETCOMPAT, set it here.
+        if needs_cetcompat(target) {
+            rustflags.arg("-Clink-arg=/CETCOMPAT");
+        }
+        // If the host itself needs /CETCOMPAT (for proc macros, build.rs, etc), set it here.
+        // NOTE: even when target and host are the same, we need to set hostflags because
+        // cargo does not apply rustflags when target == host.
+        if needs_cetcompat(compiler.host) {
+            hostflags.arg("-Clink-arg=/CETCOMPAT");
+        }
+
         // For `cargo doc` invocations, make rustdoc print the Rust version into the docs
         // This replaces spaces with tabs because RUSTDOCFLAGS does not
         // support arguments with regular spaces. Hopefully someday Cargo will

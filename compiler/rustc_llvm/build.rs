@@ -209,6 +209,11 @@ fn main() {
         cfg.define("NDEBUG", None);
     }
 
+    // Enable /W3 for BinSkim compliance.
+    if host.ends_with("msvc") {
+        cfg.flag("/W3");
+    }
+
     rerun_if_changed_anything_in_dir(Path::new("llvm-wrapper"));
     cfg.file("llvm-wrapper/PassWrapper.cpp")
         .file("llvm-wrapper/RustWrapper.cpp")

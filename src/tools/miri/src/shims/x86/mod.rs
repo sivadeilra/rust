@@ -10,7 +10,6 @@ use rustc_target::callconv::{Conv, FnAbi};
 use self::helpers::bool_to_simd_element;
 use crate::*;
 
-mod aesni;
 mod avx;
 mod avx2;
 mod bmi;
@@ -157,9 +156,11 @@ pub(super) trait EvalContextExt<'tcx>: crate::MiriInterpCxExt<'tcx> {
                 );
             }
             name if name.starts_with("aesni.") => {
-                return aesni::EvalContextExt::emulate_x86_aesni_intrinsic(
-                    this, link_name, abi, args, dest,
-                );
+                // The OSS/upstream project supports emulating these intrinsics using the `aes` crate however use of the `aes` crate is banned
+                // by the Crypto Board. Rather than request an on-going exception, we're patching this out and will just panic instead. If
+                // this becomes important to internal users, we can stop patching this out and request an exception using the user scenario
+                // for additional justification.
+                panic!("Emulation of AES intrinsics is not supported by the internal toolchain. Please report this to rusthelp@microsoft.com");
             }
             name if name.starts_with("avx.") => {
                 return avx::EvalContextExt::emulate_x86_avx_intrinsic(

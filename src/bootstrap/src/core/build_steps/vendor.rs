@@ -75,7 +75,7 @@ impl Step for Vendor {
         builder.info(&format!("Vendoring sources to {:?}", self.root_dir));
 
         let mut cmd = command(&builder.initial_cargo);
-        cmd.arg("vendor");
+        cmd.arg("vendor").arg("--respect-source-config");
 
         if self.versioned_dirs {
             cmd.arg("--versioned-dirs");

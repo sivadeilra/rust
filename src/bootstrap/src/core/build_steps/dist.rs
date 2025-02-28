@@ -1101,7 +1101,10 @@ impl Step for PlainSourceTarball {
         write_git_info(builder.rust_info().info(), plain_dst_src);
         write_git_info(builder.cargo_info.info(), &plain_dst_src.join("./src/tools/cargo"));
 
-        if builder.config.dist_vendor {
+        // If build.vendor is set, we're already in an environment with vendored sources,
+        // in that case don't try to vendor again as `cargo vendor --respect-source-config`
+        // ends up deleting the packages in the "/vendor" directory
+        if builder.config.dist_vendor && !builder.config.vendor {
             builder.require_and_update_all_submodules();
 
             // Vendor all Cargo dependencies

@@ -17,6 +17,7 @@ pub(crate) fn opts() -> TargetOptions {
             SplitDebuginfo::Unpacked,
             SplitDebuginfo::Off,
         ]),
+        default_dwarf_version: 5,
         ..Default::default()
     }
 }

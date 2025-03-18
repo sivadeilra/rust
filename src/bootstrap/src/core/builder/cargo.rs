@@ -584,13 +584,8 @@ impl Builder<'_> {
                 setting
             }
             None => {
-                if mode == Mode::Std {
-                    // The standard library defaults to the legacy scheme
-                    false
-                } else {
-                    // The compiler and tools default to the new scheme
-                    true
-                }
+                // Default to the new scheme
+                true
             }
         };
 

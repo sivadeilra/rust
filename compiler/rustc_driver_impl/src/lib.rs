@@ -848,6 +848,7 @@ pub macro version($early_dcx: expr, $binary: literal, $matches: expr) {
         unw(option_env!("CFG_VER_HASH")),
         unw(option_env!("CFG_VER_DATE")),
         unw(option_env!("CFG_RELEASE")),
+        unw(option_env!("CFG_MANIFEST_CHANNEL")),
     )
 }
 
@@ -860,6 +861,7 @@ pub fn version_at_macro_invocation(
     commit_hash: &str,
     commit_date: &str,
     release: &str,
+    manifest_channel: &str,
 ) {
     let verbose = matches.opt_present("verbose");
 
@@ -880,6 +882,7 @@ pub fn version_at_macro_invocation(
         safe_println!("commit-date: {commit_date}");
         safe_println!("host: {}", config::host_tuple());
         safe_println!("release: {release}");
+        safe_println!("manifest-channel: {manifest_channel}");
 
         get_backend_from_raw_matches(early_dcx, matches).print_version();
     }

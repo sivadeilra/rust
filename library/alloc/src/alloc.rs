@@ -31,6 +31,12 @@ unsafe extern "Rust" {
     #[rustc_std_internal_symbol]
     fn __rust_alloc_zeroed(size: usize, align: usize) -> *mut u8;
 
+    #[rustc_nounwind]
+    #[rustc_std_internal_symbol]
+    #[cfg(not(bootstrap))]
+    fn __rust_no_alloc_shim_is_unstable_v2();
+
+    #[cfg(bootstrap)]
     #[rustc_std_internal_symbol]
     static __rust_no_alloc_shim_is_unstable: u8;
 }
@@ -88,6 +94,9 @@ pub unsafe fn alloc(layout: Layout) -> *mut u8 {
     unsafe {
         // Make sure we don't accidentally allow omitting the allocator shim in
         // stable code until it is actually stabilized.
+        #[cfg(not(bootstrap))]
+        __rust_no_alloc_shim_is_unstable_v2();
+        #[cfg(bootstrap)]
         core::ptr::read_volatile(&__rust_no_alloc_shim_is_unstable);
 
         __rust_alloc(layout.size(), layout.align())
@@ -170,7 +179,10 @@ pub unsafe fn realloc(ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 
 pub unsafe fn alloc_zeroed(layout: Layout) -> *mut u8 {
     unsafe {
         // Make sure we don't accidentally allow omitting the allocator shim in
-        // stable code until it is actually stabilized.
+        // stable code until it is actually stabilized. 
+        #[cfg(not(bootstrap))]
+        __rust_no_alloc_shim_is_unstable_v2();
+        #[cfg(bootstrap)]
         core::ptr::read_volatile(&__rust_no_alloc_shim_is_unstable);
 
         __rust_alloc_zeroed(layout.size(), layout.align())

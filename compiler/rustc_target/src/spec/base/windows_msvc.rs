@@ -1,7 +1,16 @@
-use crate::spec::{TargetOptions, base, cvs};
+use crate::spec::{LinkerFlavor, Lld, TargetOptions, base, cvs};
 
 pub(crate) fn opts() -> TargetOptions {
-    let base = base::msvc::opts();
+    let mut base = base::msvc::opts();
+
+    base.add_pre_link_args(
+        LinkerFlavor::Msvc(Lld::No),
+        &[
+            // Vulcan generally requires fixups in the debug info. By prepending this arg to link.exe
+            // command line, we're effectively making /DEBUGTYPE:CV,FIXUP the default for this target.
+            "/DEBUGTYPE:CV,FIXUP",
+        ],
+    );
 
     TargetOptions {
         os: "windows".into(),

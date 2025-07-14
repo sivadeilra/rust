@@ -2656,6 +2656,9 @@ pub struct TargetOptions {
     /// Sanitizers enabled by default for this target.
     pub default_sanitizers: SanitizerSet,
 
+    /// Default branch protection flag to apply for this target.
+    pub default_branch_protection: Option<&'static str>,
+
     /// Minimum number of bits in #[repr(C)] enum. Defaults to the size of c_int
     pub c_enum_min_bits: Option<u64>,
 
@@ -2903,6 +2906,7 @@ impl Default for TargetOptions {
             supported_split_debuginfo: Cow::Borrowed(&[SplitDebuginfo::Off]),
             supported_sanitizers: SanitizerSet::empty(),
             default_sanitizers: SanitizerSet::empty(),
+            default_branch_protection: None,
             c_enum_min_bits: None,
             generate_arange_section: true,
             supports_stack_protector: true,

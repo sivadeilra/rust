@@ -37,9 +37,7 @@ use rustc_target::spec::{
 use crate::code_stats::CodeStats;
 pub use crate::code_stats::{DataTypeKind, FieldInfo, FieldKind, SizeKind, VariantInfo};
 use crate::config::{
-    self, CFGuard, CoverageLevel, CrateType, DebugInfo, ErrorOutputType, FunctionReturn, Input,
-    InstrumentCoverage, OptLevel, OutFileName, OutputType, RemapPathScopeComponents,
-    SwitchWithOptPath,
+    self, BranchProtection, CFGuard, CoverageLevel, CrateType, DebugInfo, ErrorOutputType, FunctionReturn, Input, InstrumentCoverage, OptLevel, OutFileName, OutputType, RemapPathScopeComponents, SwitchWithOptPath
 };
 use crate::filesearch::FileSearch;
 use crate::parse::{ParseSess, add_feature_diagnostics};
@@ -419,6 +417,14 @@ impl Session {
 
     pub fn is_split_lto_unit_enabled(&self) -> bool {
         self.opts.unstable_opts.split_lto_unit == Some(true)
+    }
+
+    pub fn branch_protection(&self) -> Option<BranchProtection> {
+        self.opts.unstable_opts.branch_protection.or_else(|| {
+            let mut protection = None;
+            crate::config::parse::parse_branch_protection(&mut protection, self.target.default_branch_protection);
+            protection
+        })
     }
 
     /// Check whether this compile session and crate type use static crt.
@@ -1357,7 +1363,7 @@ fn validate_commandline_args_with_session_available(sess: &Session) {
         }
     }
 
-    if sess.opts.unstable_opts.branch_protection.is_some() && sess.target.arch != "aarch64" {
+    if sess.branch_protection().is_some() && sess.target.arch != "aarch64" {
         sess.dcx().emit_err(errors::BranchProtectionRequiresAArch64);
     }
 

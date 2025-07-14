@@ -371,8 +371,26 @@ impl Session {
         self.opts.unstable_opts.coverage_options.discard_all_spans_in_codegen
     }
 
+    /// Gets the set of enabled (requested) sanitizers.
+    pub fn sanitizer(&self) -> SanitizerSet {
+        if self.opts.unstable_opts.no_sanitizers {
+            return SanitizerSet::empty();
+        }
+        let cfi_mask = if self.can_cfi_be_enabled() {
+            SanitizerSet::CFI
+        } else {
+            SanitizerSet::empty()
+        };
+        self.opts.unstable_opts.sanitizer | (self.target.options.default_sanitizers & cfi_mask)
+    }
+
     pub fn is_sanitizer_cfi_enabled(&self) -> bool {
-        self.opts.unstable_opts.sanitizer.contains(SanitizerSet::CFI)
+        self.sanitizer().contains(SanitizerSet::CFI)
+    }
+
+    #[allow(rustc::bad_opt_access)]
+    fn can_cfi_be_enabled(&self) -> bool {
+        self.lto() == config::Lto::Fat && (self.codegen_units().as_usize() == 1) && !self.opts.crate_types.contains(&CrateType::Rlib) && !self.opts.crate_types.contains(&CrateType::Dylib) && !self.opts.crate_types.contains(&CrateType::ProcMacro)
     }
 
     pub fn is_sanitizer_cfi_canonical_jump_tables_disabled(&self) -> bool {
@@ -396,7 +414,7 @@ impl Session {
     }
 
     pub fn is_sanitizer_kcfi_enabled(&self) -> bool {
-        self.opts.unstable_opts.sanitizer.contains(SanitizerSet::KCFI)
+        self.sanitizer().contains(SanitizerSet::KCFI)
     }
 
     pub fn is_split_lto_unit_enabled(&self) -> bool {
@@ -578,7 +596,7 @@ impl Session {
         // AddressSanitizer and KernelAddressSanitizer uses lifetimes to detect use after scope bugs.
         // MemorySanitizer uses lifetimes to detect use of uninitialized stack variables.
         // HWAddressSanitizer will use lifetimes to detect use after scope bugs in the future.
-        || self.opts.unstable_opts.sanitizer.intersects(SanitizerSet::ADDRESS | SanitizerSet::KERNELADDRESS | SanitizerSet::MEMORY | SanitizerSet::HWADDRESS)
+        || self.sanitizer().intersects(SanitizerSet::ADDRESS | SanitizerSet::KERNELADDRESS | SanitizerSet::MEMORY | SanitizerSet::HWADDRESS)
     }
 
     pub fn diagnostic_width(&self) -> usize {
@@ -714,7 +732,7 @@ impl Session {
             let more_names = self.opts.output_types.contains_key(&OutputType::LlvmAssembly)
                 || self.opts.output_types.contains_key(&OutputType::Bitcode)
                 // AddressSanitizer and MemorySanitizer use alloca name when reporting an issue.
-                || self.opts.unstable_opts.sanitizer.intersects(SanitizerSet::ADDRESS | SanitizerSet::MEMORY);
+                || self.sanitizer().intersects(SanitizerSet::ADDRESS | SanitizerSet::MEMORY);
             !more_names
         }
     }
@@ -1225,7 +1243,7 @@ fn validate_commandline_args_with_session_available(sess: &Session) {
 
     // Sanitizers can only be used on platforms that we know have working sanitizer codegen.
     let supported_sanitizers = sess.target.options.supported_sanitizers;
-    let mut unsupported_sanitizers = sess.opts.unstable_opts.sanitizer - supported_sanitizers;
+    let mut unsupported_sanitizers = sess.sanitizer() - supported_sanitizers;
     // Niche: if `fixed-x18`, or effectively switching on `reserved-x18` flag, is enabled
     // we should allow Shadow Call Stack sanitizer.
     if sess.opts.unstable_opts.fixed_x18 && sess.target.arch == "aarch64" {
@@ -1245,7 +1263,7 @@ fn validate_commandline_args_with_session_available(sess: &Session) {
     }
 
     // Cannot mix and match mutually-exclusive sanitizers.
-    if let Some((first, second)) = sess.opts.unstable_opts.sanitizer.mutually_exclusive() {
+    if let Some((first, second)) = sess.sanitizer().mutually_exclusive() {
         sess.dcx().emit_err(errors::CannotMixAndMatchSanitizers {
             first: first.to_string(),
             second: second.to_string(),
@@ -1254,7 +1272,7 @@ fn validate_commandline_args_with_session_available(sess: &Session) {
 
     // Cannot enable crt-static with sanitizers on Linux
     if sess.crt_static(None)
-        && !sess.opts.unstable_opts.sanitizer.is_empty()
+        && !sess.sanitizer().is_empty()
         && !sess.target.is_like_msvc
     {
         sess.dcx().emit_err(errors::CannotEnableCrtStaticLinux);

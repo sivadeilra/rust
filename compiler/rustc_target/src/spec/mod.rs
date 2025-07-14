@@ -2652,6 +2652,9 @@ pub struct TargetOptions {
     /// enabled can generated on this target, but the necessary supporting libraries are not
     /// distributed with the target, the sanitizer should still appear in this list for the target.
     pub supported_sanitizers: SanitizerSet,
+    
+    /// Sanitizers enabled by default for this target.
+    pub default_sanitizers: SanitizerSet,
 
     /// Minimum number of bits in #[repr(C)] enum. Defaults to the size of c_int
     pub c_enum_min_bits: Option<u64>,
@@ -2899,6 +2902,7 @@ impl Default for TargetOptions {
             // `Off` is supported by default, but targets can remove this manually, e.g. Windows.
             supported_split_debuginfo: Cow::Borrowed(&[SplitDebuginfo::Off]),
             supported_sanitizers: SanitizerSet::empty(),
+            default_sanitizers: SanitizerSet::empty(),
             c_enum_min_bits: None,
             generate_arange_section: true,
             supports_stack_protector: true,
